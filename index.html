@@ -24,7 +24,7 @@
         /* UI Containers */
         .container { padding: 15px; max-width: 900px; margin: 0 auto; }
         .card { background: #1e1e1e; padding: 16px; border-radius: 10px; border: 1px solid #2d2d2d; margin-bottom: 16px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         h3, h4 { color: #4dabf7; margin: 0; }
         
         /* Form Inputs & Buttons */
@@ -107,7 +107,10 @@
         <div class="card">
             <div class="card-header">
                 <h3>📊 Live Multi-Branch Stock Status</h3>
-                <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 Export Excel</button>
+                <div>
+                    <button class="btn btn-warning btn-sm owner-only hidden" onclick="resetBranchStockOnly()">🔄 Reset Branch Stock</button>
+                    <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 Export Excel</button>
+                </div>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -128,7 +131,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h3>📦 Direct Stock Adjustment / IN</h3></div>
+            <div class="card-header"><h3>📦 Stock Adjustment / Direct Add</h3></div>
             <label>Select Item</label>
             <select id="adjItemSelect"></select>
             <label>Location / Target Branch</label>
@@ -137,9 +140,14 @@
                 <option value="branch_1">Branch 1</option>
                 <option value="branch_2">Branch 2</option>
             </select>
-            <label>Quantity to Add (+ Stock IN)</label>
+            <label>Action Mode</label>
+            <select id="adjTypeSelect">
+                <option value="add">+ Add Stock (IN)</option>
+                <option value="set">= Set Exact Quantity</option>
+            </select>
+            <label>Quantity</label>
             <input type="number" id="adjQtyInput" placeholder="0">
-            <button class="btn btn-primary" onclick="processDirectStockAdd()">+ Add Stock Entry</button>
+            <button class="btn btn-primary" onclick="processDirectStockAdd()">Update Stock Entry</button>
         </div>
     </div>
 
@@ -160,7 +168,10 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h3>⏳ Pending Transfer Confirmations</h3></div>
+            <div class="card-header">
+                <h3>⏳ Daily Transfer Logs & Status</h3>
+                <input type="date" id="filterLogDate" onchange="renderTransfersTable()" style="width: auto; padding: 4px; font-size: 12px;">
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -259,23 +270,25 @@
 
     function logout() { location.reload(); }
 
+    function logAction(msg) {
+        db.ref('logs').push({
+            time: new Date().toLocaleString(),
+            msg: msg
+        });
+    }
+
     function initRealtimeSync() {
-        // Sync Inventory Items
         db.ref('enterprise_inventory').on('value', (snapshot) => {
             inventoryData = snapshot.val() || {};
             renderStockTable();
             populateDropdowns();
-        }, (error) => {
-            alert("Firebase Sync Error: " + error.message);
         });
 
-        // Sync Transfers
         db.ref('transfers').on('value', (snapshot) => {
             transferLogs = snapshot.val() || {};
             renderTransfersTable();
         });
 
-        // Sync System Logs
         db.ref('logs').limitToLast(12).on('value', (snapshot) => {
             let logs = snapshot.val() || {};
             let container = document.getElementById('systemAuditLogs');
@@ -285,7 +298,6 @@
             });
         });
 
-        // Sync Owner PIN
         db.ref('settings/owner_pin').on('value', (snapshot) => {
             if (snapshot.exists()) ownerPinCode = snapshot.val();
         });
@@ -352,27 +364,17 @@
         let nameInput = document.getElementById('newItemNameInput');
         let minInput = document.getElementById('newItemMinLimitInput');
         let name = nameInput.value.trim();
-        let min = parseFloat(minInput.value);
-        if (isNaN(min)) min = 5;
+        let min = parseFloat(minInput.value) || 5;
 
         if (!name) return alert("Please enter item name!");
-
-        // FIXED KEY GENERATION: Replacing '/' and special chars with '_' so Firebase doesn't break
         let key = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
         db.ref('enterprise_inventory/' + key).set({
-            name: name, 
-            main_store: 0, 
-            branch_1: 0, 
-            branch_2: 0, 
-            min_limit: min
+            name: name, main_store: 0, branch_1: 0, branch_2: 0, min_limit: min
         }).then(() => {
-            nameInput.value = '';
-            minInput.value = '';
+            nameInput.value = ''; minInput.value = '';
             alert("✅ " + name + " Created Successfully!");
             logAction(`New item created: ${name}`);
-        }).catch((err) => {
-            alert("❌ Firebase Error: " + err.message + "\n\nMake sure Firebase Rules are set to true!");
         });
     }
 
@@ -388,15 +390,36 @@
     function processDirectStockAdd() {
         let key = document.getElementById('adjItemSelect').value;
         let loc = document.getElementById('adjLocationSelect').value;
-        let qty = parseFloat(document.getElementById('adjQtyInput').value) || 0;
+        let type = document.getElementById('adjTypeSelect').value;
+        let qty = parseFloat(document.getElementById('adjQtyInput').value);
 
-        if (qty <= 0 || !key) return alert("Enter valid quantity and select an item!");
+        if (isNaN(qty) || !key) return alert("Enter valid quantity!");
 
-        let curr = (inventoryData[key] && inventoryData[key][loc]) ? inventoryData[key][loc] : 0;
-        db.ref(`enterprise_inventory/${key}/${loc}`).set(curr + qty).then(() => {
+        let finalValue = qty;
+        if (type === 'add') {
+            let curr = (inventoryData[key] && inventoryData[key][loc]) ? inventoryData[key][loc] : 0;
+            finalValue = curr + qty;
+        }
+
+        db.ref(`enterprise_inventory/${key}/${loc}`).set(finalValue).then(() => {
             document.getElementById('adjQtyInput').value = '';
-            alert("✅ Stock Added Successfully!");
-            logAction(`Direct Stock IN: +${qty} to ${loc.toUpperCase()} for ${inventoryData[key].name}`);
+            alert("✅ Stock Updated!");
+            logAction(`Stock update for ${inventoryData[key].name} (${loc.toUpperCase()}): ${finalValue}`);
+        });
+    }
+
+    function resetBranchStockOnly() {
+        if (!confirm("Kya aap Branch 1 aur Branch 2 ka stock ZERO karna chahte hain? (Main Warehouse aur Items safe rahenge)")) return;
+        
+        let updates = {};
+        Object.keys(inventoryData).forEach(key => {
+            updates[`enterprise_inventory/${key}/branch_1`] = 0;
+            updates[`enterprise_inventory/${key}/branch_2`] = 0;
+        });
+
+        db.ref().update(updates).then(() => {
+            alert("✅ Dono branches ka stock Zero kar diya gaya hai!");
+            logAction("Branch 1 & 2 Stock Reset to 0 by Admin");
         });
     }
 
@@ -410,19 +433,20 @@
         let mainStock = inventoryData[key].main_store || 0;
         if (mainStock < qty) return alert("Insufficient Main Warehouse stock!");
 
-        // Deduct Main Warehouse and Create Transfer Entry
         db.ref(`enterprise_inventory/${key}/main_store`).set(mainStock - qty);
 
+        let now = new Date();
         db.ref('transfers').push({
             item_key: key,
             item_name: inventoryData[key].name,
             qty: qty,
             destination: dest,
             status: 'PENDING',
-            timestamp: new Date().toLocaleString()
+            date: now.toISOString().split('T')[0],
+            timestamp: now.toLocaleString()
         }).then(() => {
             document.getElementById('transferQtyInput').value = '';
-            alert("🚚 Stock Dispatched! Awaiting Destination Confirmation.");
+            alert("🚚 Stock Dispatched!");
             logAction(`Dispatched ${qty} ${inventoryData[key].name} to ${dest.toUpperCase()}`);
         });
     }
@@ -431,6 +455,7 @@
         let tbody = document.getElementById('pendingTransfersTableBody');
         tbody.innerHTML = '';
         let keys = Object.keys(transferLogs);
+        let selectedDate = document.getElementById('filterLogDate').value;
 
         if(keys.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6">No transfer history found.</td></tr>';
@@ -439,6 +464,8 @@
 
         keys.reverse().forEach(key => {
             let tr = transferLogs[key];
+            if (selectedDate && tr.date && tr.date !== selectedDate) return;
+
             let isPending = tr.status === 'PENDING';
             let statusBadge = isPending ? '<span class="badge badge-pending">PENDING</span>' : '<span class="badge badge-confirmed">RECEIVED</span>';
             
@@ -450,7 +477,7 @@
                     <td>${tr.timestamp}</td>
                     <td>${tr.item_name}</td>
                     <td>${tr.qty}</td>
-                    <td>${tr.destination.toUpperCase()}</td>
+                    <td>${tr.destination.toUpperCase().replace('_', ' ')}</td>
                     <td>${statusBadge}</td>
                     <td>${actionBtn}</td>
                 </tr>
@@ -458,45 +485,39 @@
         });
     }
 
-    function confirmTransfer(transferKey) {
-        let tr = transferLogs[transferKey];
-        if (!tr || tr.status !== 'PENDING') return;
+    function confirmTransfer(key) {
+        let tr = transferLogs[key];
+        if (!tr) return;
 
-        let itemKey = tr.item_key;
-        let dest = tr.destination;
-        let qty = tr.qty;
-        let currentDestStock = (inventoryData[itemKey] && inventoryData[itemKey][dest]) ? inventoryData[itemKey][dest] : 0;
-
-        // Add to Destination Stock and Mark Transfer Confirmed
-        db.ref(`enterprise_inventory/${itemKey}/${dest}`).set(currentDestStock + qty);
-        db.ref(`transfers/${transferKey}/status`).set('CONFIRMED').then(() => {
-            alert("✅ Transfer Received & Confirmed!");
-            logAction(`Confirmed Receipt: +${qty} ${tr.item_name} at ${dest.toUpperCase()}`);
+        let currBranchStock = inventoryData[tr.item_key][tr.destination] || 0;
+        
+        db.ref(`enterprise_inventory/${tr.item_key}/${tr.destination}`).set(currBranchStock + tr.qty);
+        db.ref(`transfers/${key}/status`).set('CONFIRMED').then(() => {
+            alert("✅ Stock Receive Confirmed!");
+            logAction(`Transfer Confirmed: ${tr.qty} ${tr.item_name} received at ${tr.destination.toUpperCase()}`);
         });
     }
 
     function updateOwnerPin() {
         let pin = document.getElementById('newOwnerPinInput').value;
-        if (pin.length < 4) return alert("PIN must be at least 4 digits!");
+        if (pin.length < 4) return alert("PIN kam az kam 4 digits ka hona chahiye!");
+        
         db.ref('settings/owner_pin').set(pin).then(() => {
-            alert("Owner PIN updated successfully!");
+            alert("✅ Admin PIN updated successfully!");
             document.getElementById('newOwnerPinInput').value = '';
         });
     }
 
-    function logAction(msg) {
-        db.ref('logs').push({ msg: msg, time: new Date().toLocaleTimeString() });
-    }
-
     function exportCSV() {
-        let csv = "Item Name,Main Store,Branch 1,Branch 2,Min Limit\n";
+        let csv = 'Item Name,Main Warehouse,Branch 1,Branch 2,Min Limit\n';
         Object.keys(inventoryData).forEach(k => {
             let i = inventoryData[k];
-            csv += `"${i.name}",${i.main_store||0},${i.branch_1||0},${i.branch_2||0},${i.min_limit||5}\n`;
+            csv += `"${i.name}",${i.main_store||0},${i.branch_1||0},${i.branch_2||0},${i.min_limit||0}\n`;
         });
+        let blob = new Blob([csv], { type: 'text/csv' });
         let a = document.createElement('a');
-        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-        a.download = `Stock_Report_${new Date().toISOString().slice(0,10)}.csv`;
+        a.href = URL.createObjectURL(blob);
+        a.download = `inventory_report_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
     }
 </script>
