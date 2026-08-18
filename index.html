@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ibn E Rahat - Enterprise Live Restaurant ERP</title>
+    <link rel="icon" href="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #121212; color: #e0e0e0; margin: 0; padding: 0; overflow-x: hidden; }
+        
+        /* Navigation Drawer */
+        .navbar { background: #1e1e1e; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .menu-btn { background: none; border: none; color: #4dabf7; font-size: 24px; cursor: pointer; }
+        .side-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #181818; border-right: 1px solid #333; z-index: 200; transition: 0.3s; padding: 20px 15px; }
+        .side-drawer.active { left: 0; }
+        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: none; }
+        .drawer-overlay.active { display: block; }
+        .drawer-item { padding: 12px; border-radius: 6px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; margin-bottom: 6px; }
+        .drawer-item:hover, .drawer-item.active { background: #2b3a4a; color: #4dabf7; }
+
+        /* UI Containers */
+        .container { padding: 15px; max-width: 900px; margin: 0 auto; }
+        .card { background: #1e1e1e; padding: 16px; border-radius: 10px; border: 1px solid #2d2d2d; margin-bottom: 16px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; }
+        h3, h4 { color: #4dabf7; margin: 0; }
+        
+        /* Form Inputs & Buttons */
+        label { font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #3d3d3d; background: #262626; color: white; border-radius: 6px; margin-top: 4px; font-size: 14px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 12px; }
+        .btn-primary { background: #1971c2; color: white; }
+        .btn-success { background: #2b8a3e; color: white; }
+        .btn-warning { background: #f59f00; color: #121212; }
+        .btn-danger { background: #e03131; color: white; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; margin-top: 0; width: auto; }
+
+        /* Badges & Tables */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #2d2d2d; padding: 10px 8px; text-align: center; font-size: 13px; }
+        th { background: #2b3a4a; color: #4dabf7; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .badge-pending { background: #f59f00; color: #121212; }
+        .badge-confirmed { background: #2b8a3e; color: white; }
+        .badge-low { background: #e03131; color: white; }
+
+        .hidden { display: none !important; }
+        .login-card { max-width: 360px; margin: 40px auto; text-align: center; }
+        .log-box { max-height: 160px; overflow-y: auto; font-size: 12px; color: #999; }
+        .log-item { padding: 6px 0; border-bottom: 1px solid #2d2d2d; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR NAVIGATION -->
+<div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
+<div id="sideDrawer" class="side-drawer">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg" style="width: 60px; height: 60px; border-radius: 50%;">
+        <h4 style="margin-top: 8px;">Ibn E Rahat ERP</h4>
+        <small id="drawerUserRole" style="color: #4dabf7;"></small>
+    </div>
+    <div class="drawer-item active" onclick="switchTab('dashboardTab')">📊 Dashboard & Stock</div>
+    <div class="drawer-item" onclick="switchTab('transferTab')">🚚 Branch Transfers</div>
+    <div class="drawer-item owner-only hidden" onclick="switchTab('manageItemsTab')">➕ Item Management</div>
+    <div class="drawer-item owner-only hidden" onclick="switchTab('userMgmtTab')">👥 Staff & Security</div>
+    <div class="drawer-item" onclick="logout()" style="color: #e03131; margin-top: 30px;">🚪 Logout</div>
+</div>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+    <h3 style="font-size: 16px;">Ibn E Rahat Enterprise</h3>
+    <span id="headerRoleBadge" class="badge badge-confirmed">STAFF</span>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="container">
+    <div class="card login-card">
+        <img src="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg" style="width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px;">
+        <h2>Ibn E Rahat ERP</h2>
+        <p style="font-size: 12px; color: #888;">Live Multi-Branch Inventory System</p>
+        
+        <label>Select Login Mode</label>
+        <select id="loginRoleSelect">
+            <option value="owner">Owner (Admin Access)</option>
+            <option value="main_store">Main Store / Warehouse Manager</option>
+            <option value="branch_1">Branch 1 Manager</option>
+            <option value="branch_2">Branch 2 Manager</option>
+        </select>
+
+        <label>Enter Security PIN</label>
+        <input type="password" id="loginPinInput" placeholder="Enter Security PIN">
+
+        <button class="btn btn-primary" onclick="loginSystem()">Login To Portal</button>
+    </div>
+</div>
+
+<!-- APP MAIN BODY -->
+<div id="appContainer" class="container hidden">
+
+    <!-- TAB 1: DASHBOARD & LIVE STOCK -->
+    <div id="dashboardTab">
+        <div class="card">
+            <div class="card-header">
+                <h3>📊 Live Multi-Branch Stock Status</h3>
+                <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 Export Excel</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Main Warehouse</th>
+                            <th>Branch 1</th>
+                            <th>Branch 2</th>
+                            <th>Min Limit</th>
+                            <th>Status</th>
+                            <th class="owner-only hidden">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liveStockTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>📦 Direct Stock Adjustment / IN</h3></div>
+            <label>Select Item</label>
+            <select id="adjItemSelect"></select>
+            <label>Location / Target Branch</label>
+            <select id="adjLocationSelect">
+                <option value="main_store">Main Warehouse</option>
+                <option value="branch_1">Branch 1</option>
+                <option value="branch_2">Branch 2</option>
+            </select>
+            <label>Quantity to Add (+ Stock IN)</label>
+            <input type="number" id="adjQtyInput" placeholder="0">
+            <button class="btn btn-primary" onclick="processDirectStockAdd()">+ Add Stock Entry</button>
+        </div>
+    </div>
+
+    <!-- TAB 2: BRANCH TRANSFERS WITH TWO-WAY CONFIRMATION -->
+    <div id="transferTab" class="hidden">
+        <div class="card">
+            <div class="card-header"><h3>🚚 Send Stock To Branch</h3></div>
+            <label>Select Item</label>
+            <select id="transferItemSelect"></select>
+            <label>Destination Branch</label>
+            <select id="transferDestSelect">
+                <option value="branch_1">Branch 1</option>
+                <option value="branch_2">Branch 2</option>
+            </select>
+            <label>Quantity to Dispatch</label>
+            <input type="number" id="transferQtyInput" placeholder="0">
+            <button class="btn btn-warning" onclick="dispatchStockTransfer()">🚀 Dispatch Transfer</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>⏳ Pending Transfer Confirmations</h3></div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date / Time</th>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Target Branch</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingTransfersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ITEM MANAGEMENT (OWNER ONLY) -->
+    <div id="manageItemsTab" class="hidden">
+        <div class="card">
+            <div class="card-header"><h3>➕ Add New Item To Catalogue</h3></div>
+            <label>Item Name</label>
+            <input type="text" id="newItemNameInput" placeholder="e.g., Shopper 12/15, Pizza Box Large">
+            <label>Minimum Warning Stock Level</label>
+            <input type="number" id="newItemMinLimitInput" placeholder="10">
+            <button class="btn btn-success" onclick="addNewCatalogueItem()">+ Create Item</button>
+        </div>
+    </div>
+
+    <!-- TAB 4: USER & SECURITY SETTINGS (OWNER ONLY) -->
+    <div id="userMgmtTab" class="hidden">
+        <div class="card">
+            <div class="card-header"><h3>🔑 Change Owner Security PIN</h3></div>
+            <label>Enter New Owner PIN</label>
+            <input type="password" id="newOwnerPinInput" placeholder="e.g., 8888">
+            <button class="btn btn-danger" onclick="updateOwnerPin()">Update Admin PIN</button>
+        </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="card">
+        <div class="card-header"><h3>📜 System Audit Log</h3></div>
+        <div id="systemAuditLogs" class="log-box"></div>
+    </div>
+
+</div>
+
+<script>
+    // Firebase Realtime Configuration
+    const firebaseConfig = { databaseURL: "https://ibn-e-rahat-inventory-default-rtdb.firebaseio.com/" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // App State
+    let activeRole = '';
+    let ownerPinCode = '8888';
+    let inventoryData = {};
+    let transferLogs = {};
+
+    function toggleDrawer() {
+        document.getElementById('sideDrawer').classList.toggle('active');
+        document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
+    function switchTab(tabId) {
+        ['dashboardTab', 'transferTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
+            document.getElementById(t).classList.add('hidden');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+        toggleDrawer();
+    }
+
+    function loginSystem() {
+        let role = document.getElementById('loginRoleSelect').value;
+        let pin = document.getElementById('loginPinInput').value;
+
+        if (role === 'owner' && pin !== ownerPinCode) {
+            return alert("Ghalat Admin PIN Code!");
+        } else if (role !== 'owner' && pin !== '1234') {
+            return alert("Ghalat Staff PIN Code!");
+        }
+
+        activeRole = role;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+        document.getElementById('headerRoleBadge').innerText = role.toUpperCase().replace('_', ' ');
+        document.getElementById('drawerUserRole').innerText = role.toUpperCase();
+
+        if (role === 'owner') {
+            document.querySelectorAll('.owner-only').forEach(e => e.classList.remove('hidden'));
+        }
+
+        initRealtimeSync();
+    }
+
+    function logout() { location.reload(); }
+
+    function initRealtimeSync() {
+        // Sync Inventory Items
+        db.ref('enterprise_inventory').on('value', (snapshot) => {
+            inventoryData = snapshot.val() || {};
+            renderStockTable();
+            populateDropdowns();
+        }, (error) => {
+            alert("Firebase Sync Error: " + error.message);
+        });
+
+        // Sync Transfers
+        db.ref('transfers').on('value', (snapshot) => {
+            transferLogs = snapshot.val() || {};
+            renderTransfersTable();
+        });
+
+        // Sync System Logs
+        db.ref('logs').limitToLast(12).on('value', (snapshot) => {
+            let logs = snapshot.val() || {};
+            let container = document.getElementById('systemAuditLogs');
+            container.innerHTML = '';
+            Object.keys(logs).reverse().forEach(k => {
+                container.innerHTML += `<div class="log-item">⏱️ <b>${logs[k].time}</b> - ${logs[k].msg}</div>`;
+            });
+        });
+
+        // Sync Owner PIN
+        db.ref('settings/owner_pin').on('value', (snapshot) => {
+            if (snapshot.exists()) ownerPinCode = snapshot.val();
+        });
+    }
+
+    function renderStockTable() {
+        let tbody = document.getElementById('liveStockTableBody');
+        tbody.innerHTML = '';
+        let keys = Object.keys(inventoryData);
+
+        if (keys.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7">No items found. Add items from Owner panel.</td></tr>';
+            return;
+        }
+
+        keys.forEach(key => {
+            let item = inventoryData[key];
+            let mainStock = item.main_store || 0;
+            let b1Stock = item.branch_1 || 0;
+            let b2Stock = item.branch_2 || 0;
+            let minLimit = item.min_limit || 5;
+
+            let total = mainStock + b1Stock + b2Stock;
+            let status = total <= minLimit ? '<span class="badge badge-low">LOW STOCK</span>' : '<span class="badge badge-confirmed">OK</span>';
+
+            let actionCol = activeRole === 'owner' 
+                ? `<td><button class="btn btn-danger btn-sm" onclick="deleteItem('${key}')">X</button></td>` 
+                : '';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${item.name}</b></td>
+                    <td>${mainStock}</td>
+                    <td>${b1Stock}</td>
+                    <td>${b2Stock}</td>
+                    <td>${minLimit}</td>
+                    <td>${status}</td>
+                    ${actionCol}
+                </tr>
+            `;
+        });
+    }
+
+    function populateDropdowns() {
+        let adjSel = document.getElementById('adjItemSelect');
+        let transSel = document.getElementById('transferItemSelect');
+        adjSel.innerHTML = ''; transSel.innerHTML = '';
+
+        let keys = Object.keys(inventoryData);
+        if (keys.length === 0) {
+            adjSel.innerHTML = '<option value="">No Items Available</option>';
+            transSel.innerHTML = '<option value="">No Items Available</option>';
+            return;
+        }
+
+        keys.forEach(key => {
+            let name = inventoryData[key].name;
+            adjSel.innerHTML += `<option value="${key}">${name}</option>`;
+            transSel.innerHTML += `<option value="${key}">${name}</option>`;
+        });
+    }
+
+    function addNewCatalogueItem() {
+        let nameInput = document.getElementById('newItemNameInput');
+        let minInput = document.getElementById('newItemMinLimitInput');
+        let name = nameInput.value.trim();
+        let min = parseFloat(minInput.value);
+        if (isNaN(min)) min = 5;
+
+        if (!name) return alert("Please enter item name!");
+
+        // FIXED KEY GENERATION: Replacing '/' and special chars with '_' so Firebase doesn't break
+        let key = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+        db.ref('enterprise_inventory/' + key).set({
+            name: name, 
+            main_store: 0, 
+            branch_1: 0, 
+            branch_2: 0, 
+            min_limit: min
+        }).then(() => {
+            nameInput.value = '';
+            minInput.value = '';
+            alert("✅ " + name + " Created Successfully!");
+            logAction(`New item created: ${name}`);
+        }).catch((err) => {
+            alert("❌ Firebase Error: " + err.message + "\n\nMake sure Firebase Rules are set to true!");
+        });
+    }
+
+    function deleteItem(key) {
+        if (confirm("Are you sure you want to delete this item?")) {
+            db.ref('enterprise_inventory/' + key).remove().then(() => {
+                alert("Item deleted!");
+                logAction(`Deleted item key: ${key}`);
+            });
+        }
+    }
+
+    function processDirectStockAdd() {
+        let key = document.getElementById('adjItemSelect').value;
+        let loc = document.getElementById('adjLocationSelect').value;
+        let qty = parseFloat(document.getElementById('adjQtyInput').value) || 0;
+
+        if (qty <= 0 || !key) return alert("Enter valid quantity and select an item!");
+
+        let curr = (inventoryData[key] && inventoryData[key][loc]) ? inventoryData[key][loc] : 0;
+        db.ref(`enterprise_inventory/${key}/${loc}`).set(curr + qty).then(() => {
+            document.getElementById('adjQtyInput').value = '';
+            alert("✅ Stock Added Successfully!");
+            logAction(`Direct Stock IN: +${qty} to ${loc.toUpperCase()} for ${inventoryData[key].name}`);
+        });
+    }
+
+    function dispatchStockTransfer() {
+        let key = document.getElementById('transferItemSelect').value;
+        let dest = document.getElementById('transferDestSelect').value;
+        let qty = parseFloat(document.getElementById('transferQtyInput').value) || 0;
+
+        if (qty <= 0 || !key) return alert("Invalid transfer quantity!");
+
+        let mainStock = inventoryData[key].main_store || 0;
+        if (mainStock < qty) return alert("Insufficient Main Warehouse stock!");
+
+        // Deduct Main Warehouse and Create Transfer Entry
+        db.ref(`enterprise_inventory/${key}/main_store`).set(mainStock - qty);
+
+        db.ref('transfers').push({
+            item_key: key,
+            item_name: inventoryData[key].name,
+            qty: qty,
+            destination: dest,
+            status: 'PENDING',
+            timestamp: new Date().toLocaleString()
+        }).then(() => {
+            document.getElementById('transferQtyInput').value = '';
+            alert("🚚 Stock Dispatched! Awaiting Destination Confirmation.");
+            logAction(`Dispatched ${qty} ${inventoryData[key].name} to ${dest.toUpperCase()}`);
+        });
+    }
+
+    function renderTransfersTable() {
+        let tbody = document.getElementById('pendingTransfersTableBody');
+        tbody.innerHTML = '';
+        let keys = Object.keys(transferLogs);
+
+        if(keys.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No transfer history found.</td></tr>';
+            return;
+        }
+
+        keys.reverse().forEach(key => {
+            let tr = transferLogs[key];
+            let isPending = tr.status === 'PENDING';
+            let statusBadge = isPending ? '<span class="badge badge-pending">PENDING</span>' : '<span class="badge badge-confirmed">RECEIVED</span>';
+            
+            let canConfirm = isPending && (activeRole === 'owner' || activeRole === tr.destination);
+            let actionBtn = canConfirm ? `<button class="btn btn-success btn-sm" onclick="confirmTransfer('${key}')">Confirm Receive</button>` : '-';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${tr.timestamp}</td>
+                    <td>${tr.item_name}</td>
+                    <td>${tr.qty}</td>
+                    <td>${tr.destination.toUpperCase()}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function confirmTransfer(transferKey) {
+        let tr = transferLogs[transferKey];
+        if (!tr || tr.status !== 'PENDING') return;
+
+        let itemKey = tr.item_key;
+        let dest = tr.destination;
+        let qty = tr.qty;
+        let currentDestStock = (inventoryData[itemKey] && inventoryData[itemKey][dest]) ? inventoryData[itemKey][dest] : 0;
+
+        // Add to Destination Stock and Mark Transfer Confirmed
+        db.ref(`enterprise_inventory/${itemKey}/${dest}`).set(currentDestStock + qty);
+        db.ref(`transfers/${transferKey}/status`).set('CONFIRMED').then(() => {
+            alert("✅ Transfer Received & Confirmed!");
+            logAction(`Confirmed Receipt: +${qty} ${tr.item_name} at ${dest.toUpperCase()}`);
+        });
+    }
+
+    function updateOwnerPin() {
+        let pin = document.getElementById('newOwnerPinInput').value;
+        if (pin.length < 4) return alert("PIN must be at least 4 digits!");
+        db.ref('settings/owner_pin').set(pin).then(() => {
+            alert("Owner PIN updated successfully!");
+            document.getElementById('newOwnerPinInput').value = '';
+        });
+    }
+
+    function logAction(msg) {
+        db.ref('logs').push({ msg: msg, time: new Date().toLocaleTimeString() });
+    }
+
+    function exportCSV() {
+        let csv = "Item Name,Main Store,Branch 1,Branch 2,Min Limit\n";
+        Object.keys(inventoryData).forEach(k => {
+            let i = inventoryData[k];
+            csv += `"${i.name}",${i.main_store||0},${i.branch_1||0},${i.branch_2||0},${i.min_limit||5}\n`;
+        });
+        let a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = `Stock_Report_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+</script>
+</body>
+</html>
