@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ibn E Rahat Enterprise - Multi-Role Inventory System</title>
+    <title>Ibn E Rahat Enterprise - PIN Protected Inventory System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -67,16 +67,18 @@
             color: var(--accent-blue);
         }
 
-        .role-select-header {
+        .role-badge-btn {
             background-color: #252525;
             color: var(--accent-green);
             border: 1px solid var(--card-border);
-            padding: 5px 8px;
+            padding: 6px 12px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: bold;
-            outline: none;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* Sidebar Navigation */
@@ -374,7 +376,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 300;
             justify-content: center;
             align-items: center;
@@ -387,9 +389,9 @@
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 8px;
-            max-width: 400px;
+            max-width: 380px;
             width: 100%;
-            padding: 18px;
+            padding: 20px;
         }
 
         .modal-header {
@@ -416,13 +418,10 @@
             <div class="app-title">Ibn E Rahat</div>
         </div>
         
-        <!-- Account / Role Switcher Header Dropdown -->
-        <select id="roleSelectHeader" class="role-select-header" onchange="changeRole(this.value)">
-            <option value="OWNER">👑 OWNER MODE</option>
-            <option value="STORE_MANAGER">🏬 STORE MANAGER</option>
-            <option value="BRANCH_1">🍕 BRANCH 1 MANAGER</option>
-            <option value="BRANCH_2">🍔 BRANCH 2 MANAGER</option>
-        </select>
+        <!-- Role Switcher Button -->
+        <button class="role-badge-btn" onclick="openLoginModal()">
+            <i class="fas fa-user-lock"></i> <span id="currentRoleBadgeLabel">OWNER MODE</span>
+        </button>
     </header>
 
     <!-- Sidebar Navigation -->
@@ -435,12 +434,9 @@
 
         <div class="role-box-sidebar">
             <label style="font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 4px;">Active Account Role:</label>
-            <select id="roleSelectSidebar" class="form-control" onchange="changeRole(this.value)">
-                <option value="OWNER">👑 Owner Mode</option>
-                <option value="STORE_MANAGER">🏬 Warehouse Manager</option>
-                <option value="BRANCH_1">🍕 Branch 1 Manager</option>
-                <option value="BRANCH_2">🍔 Branch 2 Manager</option>
-            </select>
+            <button class="btn btn-blue" style="width: 100%; justify-content: center;" onclick="openLoginModal()">
+                <i class="fas fa-key"></i> Switch Account Role
+            </button>
         </div>
 
         <ul class="sidebar-menu">
@@ -448,7 +444,7 @@
             <li><a href="#" onclick="switchView('dispatchView')" id="nav-dispatch"><i class="fas fa-truck-loading"></i> Stock Dispatch Form</a></li>
             <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch & Stock Ledger</a></li>
             <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Consumption & Wastage</a></li>
-            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> WhatsApp & Settings</a></li>
+            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> Security & Settings</a></li>
         </ul>
     </div>
 
@@ -456,7 +452,6 @@
 
         <!-- VIEW 1: LIVE STOCK DASHBOARD -->
         <div id="dashboardView" class="app-view active-view">
-            <!-- KPI Summary Cards -->
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-title">Total Items</div>
@@ -477,13 +472,11 @@
                     <i class="fas fa-boxes"></i> Live Stock Tracker (<span id="roleDisplayTitle">Owner View</span>)
                 </div>
 
-                <!-- WhatsApp Quick Button -->
                 <div class="btn-group" style="margin-bottom: 12px;">
                     <button class="btn btn-green" onclick="openWhatsAppModal('summary')"><i class="fab fa-whatsapp"></i> Share WhatsApp Report</button>
                     <button class="btn btn-blue" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
                 </div>
 
-                <!-- Filters -->
                 <div class="filter-container">
                     <button class="filter-btn active" onclick="setFilter('ALL', this)">All Items</button>
                     <button class="filter-btn" onclick="setFilter('LOW', this)">⚠️ Low Stock Only</button>
@@ -491,13 +484,11 @@
                     <button class="filter-btn" onclick="setFilter('PACKAGING', this)">Packaging</button>
                 </div>
 
-                <!-- Search -->
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" id="searchInput" placeholder="Search item name..." onkeyup="renderStockTable()">
                 </div>
 
-                <!-- Table -->
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -510,15 +501,13 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="stockTableBody">
-                            <!-- Stock items dynamically populated -->
-                        </tbody>
+                        <tbody id="stockTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- VIEW 2: STOCK DISPATCH FORM (Main Store / Manager feature) -->
+        <!-- VIEW 2: STOCK DISPATCH FORM -->
         <div id="dispatchView" class="app-view">
             <div class="panel-card">
                 <div class="panel-title">
@@ -558,7 +547,6 @@
                     <button class="btn btn-red" id="btnClearLedger" onclick="confirmClearHistory()"><i class="fas fa-eraser"></i> Clear History</button>
                 </div>
 
-                <!-- Search & Filters for Ledger -->
                 <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="text" id="ledgerSearch" class="form-control" style="flex: 1;" placeholder="Search item or branch..." onkeyup="renderLedgerTable()">
                     <select id="branchFilter" class="form-control" style="width: auto;" onchange="renderLedgerTable()">
@@ -579,9 +567,7 @@
                                 <th>Action Type</th>
                             </tr>
                         </thead>
-                        <tbody id="ledgerTableBody">
-                            <!-- History populated dynamically -->
-                        </tbody>
+                        <tbody id="ledgerTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -623,7 +609,7 @@
             </div>
         </div>
 
-        <!-- VIEW 5: SETTINGS & WHATSAPP CONFIG -->
+        <!-- VIEW 5: SETTINGS & OWNER SECURITY CONTROL -->
         <div id="settingsView" class="app-view">
             <div class="panel-card">
                 <div class="panel-title">
@@ -633,18 +619,74 @@
                 <div class="form-group">
                     <label>Default WhatsApp Phone Number (With Country Code e.g., 923001234567)</label>
                     <input type="text" id="whatsappNumberInput" class="form-control" placeholder="Leave empty for direct app sharing picker">
-                    <small style="color: var(--text-muted); font-size: 10px; display: block; margin-top: 4px;">
-                        * Leave empty if you want WhatsApp to open contact picker every time.
-                    </small>
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-blue" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
-                    <button class="btn btn-red" onclick="clearSavedNumber()"><i class="fas fa-times"></i> Remove Saved Number</button>
+                    <button class="btn btn-blue" onclick="saveSettings()"><i class="fas fa-save"></i> Save WhatsApp Settings</button>
                 </div>
+            </div>
+
+            <!-- OWNER ONLY PIN CONTROL PANEL -->
+            <div class="panel-card" id="ownerPinControlCard">
+                <div class="panel-title" style="color: var(--accent-red);">
+                    <i class="fas fa-user-shield"></i> Owner Security: Manage Account PINs
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Only accessible in Owner Mode to change PIN codes for all branch accounts.</p>
+
+                <div class="form-group">
+                    <label>👑 Owner PIN</label>
+                    <input type="password" id="pinOwnerInput" class="form-control" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label>🏬 Store Manager PIN</label>
+                    <input type="password" id="pinStoreInput" class="form-control" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label>🍕 Branch 1 Manager PIN</label>
+                    <input type="password" id="pinB1Input" class="form-control" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label>🍔 Branch 2 Manager PIN</label>
+                    <input type="password" id="pinB2Input" class="form-control" maxlength="6">
+                </div>
+
+                <button class="btn btn-green" onclick="saveAllPINs()"><i class="fas fa-key"></i> Update All PIN Codes</button>
             </div>
         </div>
 
+    </div>
+
+    <!-- LOGIN / ROLE SWITCH PIN MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 style="color: var(--accent-blue);"><i class="fas fa-shield-alt"></i> Select Account Login</h4>
+                <button class="menu-btn" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select Account Role</label>
+                    <select id="modalRoleSelect" class="form-control">
+                        <option value="OWNER">👑 Owner Account</option>
+                        <option value="STORE_MANAGER">🏬 Store / Warehouse Manager</option>
+                        <option value="BRANCH_1">🍕 Branch 1 Manager</option>
+                        <option value="BRANCH_2">🍔 Branch 2 Manager</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Enter Account PIN Code</label>
+                    <input type="password" id="modalPinInput" class="form-control" placeholder="Enter PIN (e.g. 0000, 1111)" maxlength="6">
+                    <small style="color: var(--text-muted); font-size: 10px; display: block; margin-top: 4px;">
+                        Default PINs: Owner:0000, Store:1111, B1:2222, B2:3333
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                <button class="btn btn-green" onclick="verifyAndSwitchRole()"><i class="fas fa-sign-in-alt"></i> Login Role</button>
+            </div>
+        </div>
     </div>
 
     <!-- WHATSAPP SHARE MODAL -->
@@ -679,7 +721,14 @@
     </div>
 
     <script>
-        // Default Initial Data
+        // Accounts PIN Setup (Owner can modify)
+        let accountPins = JSON.parse(localStorage.getItem('ibn_pins')) || {
+            'OWNER': '0000',
+            'STORE_MANAGER': '1111',
+            'BRANCH_1': '2222',
+            'BRANCH_2': '3333'
+        };
+
         let currentRole = localStorage.getItem('ibn_role') || 'OWNER';
 
         let stockData = JSON.parse(localStorage.getItem('ibn_stock')) || [
@@ -707,24 +756,56 @@
         function saveData() {
             localStorage.setItem('ibn_stock', JSON.stringify(stockData));
             localStorage.setItem('ibn_ledger', JSON.stringify(ledgerData));
+            localStorage.setItem('ibn_pins', JSON.stringify(accountPins));
             updateKPIs();
         }
 
-        function changeRole(role) {
+        function openLoginModal() {
+            document.getElementById('modalRoleSelect').value = currentRole;
+            document.getElementById('modalPinInput').value = '';
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function verifyAndSwitchRole() {
+            const selectedRole = document.getElementById('modalRoleSelect').value;
+            const enteredPin = document.getElementById('modalPinInput').value.trim();
+
+            const requiredPin = accountPins[selectedRole] || '0000';
+
+            if (enteredPin === requiredPin) {
+                applyRole(selectedRole);
+                closeLoginModal();
+                alert(`Logged in as ${selectedRole.replace('_', ' ')}!`);
+            } else {
+                alert("❌ Incorrect PIN Code! Please enter correct account PIN.");
+            }
+        }
+
+        function applyRole(role) {
             currentRole = role;
             localStorage.setItem('ibn_role', role);
-            document.getElementById('roleSelectHeader').value = role;
-            document.getElementById('roleSelectSidebar').value = role;
+
+            let labelMap = {
+                'OWNER': 'OWNER MODE',
+                'STORE_MANAGER': 'STORE MANAGER',
+                'BRANCH_1': 'BRANCH 1 MANAGER',
+                'BRANCH_2': 'BRANCH 2 MANAGER'
+            };
+            document.getElementById('currentRoleBadgeLabel').innerText = labelMap[role] || 'OWNER MODE';
 
             let titleMap = {
-                'OWNER': 'Owner View (Full Control)',
+                'OWNER': 'Owner View (Full Access)',
                 'STORE_MANAGER': 'Warehouse Manager View',
                 'BRANCH_1': 'Branch 1 View',
                 'BRANCH_2': 'Branch 2 View'
             };
             document.getElementById('roleDisplayTitle').innerText = titleMap[role] || 'Owner View';
 
-            // Custom UI permissions per role
+            // Filter columns based on role
             if (role === 'BRANCH_1') {
                 document.getElementById('colB2').style.display = 'none';
                 document.getElementById('colWarehouse').style.display = 'table-cell';
@@ -796,7 +877,6 @@
                 if (search && !item.name.toLowerCase().includes(search)) return;
 
                 const tr = document.createElement('tr');
-                
                 let b1Col = currentRole === 'BRANCH_2' ? '' : `<td>${item.b1}</td>`;
                 let b2Col = currentRole === 'BRANCH_1' ? '' : `<td>${item.b2}</td>`;
 
@@ -940,7 +1020,12 @@
         }
 
         function confirmClearHistory() {
-            if (confirm("Are you sure you want to clear the entire dispatch/wastage ledger history? Main stock will remain safe.")) {
+            if (currentRole !== 'OWNER') {
+                alert("🔒 Permission Denied! Only OWNER can clear ledger history.");
+                return;
+            }
+
+            if (confirm("Are you sure you want to clear the entire dispatch/wastage ledger history?")) {
                 ledgerData = [];
                 saveData();
                 renderLedgerTable();
@@ -950,6 +1035,18 @@
         function loadSettingsView() {
             const savedNum = localStorage.getItem('ibn_wa_number') || '';
             document.getElementById('whatsappNumberInput').value = savedNum;
+
+            // Display PIN inputs for Owner mode only
+            const ownerCard = document.getElementById('ownerPinControlCard');
+            if (currentRole === 'OWNER') {
+                ownerCard.style.display = 'block';
+                document.getElementById('pinOwnerInput').value = accountPins['OWNER'] || '';
+                document.getElementById('pinStoreInput').value = accountPins['STORE_MANAGER'] || '';
+                document.getElementById('pinB1Input').value = accountPins['BRANCH_1'] || '';
+                document.getElementById('pinB2Input').value = accountPins['BRANCH_2'] || '';
+            } else {
+                ownerCard.style.display = 'none';
+            }
         }
 
         function saveSettings() {
@@ -958,10 +1055,29 @@
             alert("Settings Saved Successfully!");
         }
 
-        function clearSavedNumber() {
-            localStorage.removeItem('ibn_wa_number');
-            document.getElementById('whatsappNumberInput').value = '';
-            alert("Saved WhatsApp number removed!");
+        function saveAllPINs() {
+            if (currentRole !== 'OWNER') {
+                alert("Only OWNER can change PIN codes!");
+                return;
+            }
+
+            const pOwner = document.getElementById('pinOwnerInput').value.trim();
+            const pStore = document.getElementById('pinStoreInput').value.trim();
+            const pB1 = document.getElementById('pinB1Input').value.trim();
+            const pB2 = document.getElementById('pinB2Input').value.trim();
+
+            if (!pOwner || !pStore || !pB1 || !pB2) {
+                alert("PINs cannot be empty!");
+                return;
+            }
+
+            accountPins['OWNER'] = pOwner;
+            accountPins['STORE_MANAGER'] = pStore;
+            accountPins['BRANCH_1'] = pB1;
+            accountPins['BRANCH_2'] = pB2;
+
+            saveData();
+            alert("🔑 All Account PIN Codes updated successfully!");
         }
 
         function openWhatsAppModal(type) {
@@ -987,7 +1103,7 @@
             if (mode === 'SAVED') {
                 phone = localStorage.getItem('ibn_wa_number') || '';
                 if (!phone) {
-                    alert("No saved number found! Please select another option or set it in Settings.");
+                    alert("No saved number found!");
                     return;
                 }
             } else if (mode === 'CUSTOM') {
@@ -1048,8 +1164,8 @@
             a.click();
         }
 
-        // Initialize App Role & Data
-        changeRole(currentRole);
+        // Init App Role
+        applyRole(currentRole);
     </script>
 </body>
 </html>
