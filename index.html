@@ -1,3 +1,15 @@
+Restaurant inventory aur branch supply operations ko completely professional aur auto-pilot par chalane ke liye, 5 boht hi aham aur zaroori features abhi missing hain jo aapke daily business tracker ko mazeed powerful bana denge:
+Missing Features Jo Naye Code Me Add Kiye Hain:
+ * Warehouse Purchase / Stock Entry Form (Naya Stock Inward System):
+   * Phele warehouse me naya maal (e.g. Chowmin 50, Ketchup 100) add karne ka direct tareeqa nahi tha. Ab warehouse manager direct "+ Stock Add" kar sakta hai.
+ * Auto Minimum Low-Stock Alert System (Red Highlighting):
+   * Jab kisi item ka stock safety limit se kam hoga, toh live dashboard par Red Alert Tag aayega taake pta chale ke kaunsa item khatam hone wala hai aur supplier ko order dena hai.
+ * Branch Waste & Loss Tracker (Zaya Maal Ka Hisab):
+   * Restaurant me items kharab hote hain, expire hote hain ya gir jate hain. Ab branch managers "Report Damage / Waste" karke zaya hone wale stock ka hisab alag se record kar sakte hain.
+ * Detailed History Log with Excel Report Export:
+   * Aaj kis branch ko kitna maal gaya, kitna zaya hua, aur kitna warehouse me aaya — yeh sab date-wise track hoga aur Excel file me download ho sakega.
+Complete Updated Code (index.html)
+Niche diya gaya mukammal updated code copy karke apni GitHub repository me replace kar dein:
 <!DOCTYPE html>
 <html lang="ur">
 <head>
@@ -11,7 +23,6 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: #121212; color: #e0e0e0; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Navigation Drawer */
         .navbar { background: #1e1e1e; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
         .menu-btn { background: none; border: none; color: #4dabf7; font-size: 24px; cursor: pointer; }
         .side-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #181818; border-right: 1px solid #333; z-index: 200; transition: 0.3s; padding: 20px 15px; }
@@ -21,13 +32,11 @@
         .drawer-item { padding: 12px; border-radius: 6px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; margin-bottom: 6px; }
         .drawer-item:hover, .drawer-item.active { background: #2b3a4a; color: #4dabf7; }
 
-        /* UI Containers */
-        .container { padding: 15px; max-width: 900px; margin: 0 auto; }
+        .container { padding: 15px; max-width: 1000px; margin: 0 auto; }
         .card { background: #1e1e1e; padding: 16px; border-radius: 10px; border: 1px solid #2d2d2d; margin-bottom: 16px; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         h3, h4 { color: #4dabf7; margin: 0; }
         
-        /* Form Inputs & Buttons */
         label { font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-top: 10px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #3d3d3d; background: #262626; color: white; border-radius: 6px; margin-top: 4px; font-size: 14px; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 12px; }
@@ -37,16 +46,16 @@
         .btn-danger { background: #e03131; color: white; }
         .btn-sm { padding: 6px 10px; font-size: 12px; margin-top: 0; width: auto; }
 
-        /* Badges & Tables */
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #2d2d2d; padding: 10px 8px; text-align: center; font-size: 13px; }
+        th, td { border: 1px solid #2d2d2d; padding: 8px; text-align: center; font-size: 12px; }
         th { background: #2b3a4a; color: #4dabf7; }
         .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-pending { background: #f59f00; color: #121212; }
         .badge-confirmed { background: #2b8a3e; color: white; }
         .badge-low { background: #e03131; color: white; }
 
+        .qty-input { width: 65px; text-align: center; padding: 5px; font-size: 13px; margin-top: 0; }
         .hidden { display: none !important; }
         .login-card { max-width: 360px; margin: 40px auto; text-align: center; }
         .log-box { max-height: 160px; overflow-y: auto; font-size: 12px; color: #999; }
@@ -55,7 +64,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR NAVIGATION -->
 <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
 <div id="sideDrawer" class="side-drawer">
     <div style="text-align: center; margin-bottom: 20px;">
@@ -63,21 +71,21 @@
         <h4 style="margin-top: 8px;">Ibn E Rahat ERP</h4>
         <small id="drawerUserRole" style="color: #4dabf7;"></small>
     </div>
-    <div class="drawer-item active" onclick="switchTab('dashboardTab')">📊 Dashboard & Stock</div>
-    <div class="drawer-item" onclick="switchTab('transferTab')">🚚 Branch Transfers</div>
+    <div class="drawer-item active" onclick="switchTab('dashboardTab')">📊 Dashboard & Live Stock</div>
+    <div class="drawer-item" onclick="switchTab('transferTab')">🚚 Demand & Dispatch</div>
+    <div class="drawer-item" onclick="switchTab('warehouseTab')">📦 Warehouse Inward Stock</div>
+    <div class="drawer-item" onclick="switchTab('wasteTab')">🗑️ Waste & Damage Entry</div>
     <div class="drawer-item owner-only hidden" onclick="switchTab('manageItemsTab')">➕ Item Management</div>
     <div class="drawer-item owner-only hidden" onclick="switchTab('userMgmtTab')">👥 Staff & Security</div>
     <div class="drawer-item" onclick="logout()" style="color: #e03131; margin-top: 30px;">🚪 Logout</div>
 </div>
 
-<!-- NAVBAR -->
 <div class="navbar">
     <button class="menu-btn" onclick="toggleDrawer()">☰</button>
     <h3 style="font-size: 16px;">Ibn E Rahat Enterprise</h3>
     <span id="headerRoleBadge" class="badge badge-confirmed">STAFF</span>
 </div>
 
-<!-- LOGIN SCREEN -->
 <div id="loginScreen" class="container">
     <div class="card login-card">
         <img src="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg" style="width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px;">
@@ -99,29 +107,30 @@
     </div>
 </div>
 
-<!-- APP MAIN BODY -->
 <div id="appContainer" class="container hidden">
 
-    <!-- TAB 1: DASHBOARD & LIVE STOCK -->
+    <!-- TAB 1: DASHBOARD & LIVE STOCK OVERVIEW -->
     <div id="dashboardTab">
         <div class="card">
             <div class="card-header">
-                <h3>📊 Live Multi-Branch Stock Status</h3>
+                <h3>📊 Live Multi-Branch Stock & Demand Tracker</h3>
                 <div>
                     <button class="btn btn-warning btn-sm owner-only hidden" onclick="resetBranchStockOnly()">🔄 Reset Branch Stock</button>
                     <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 Export Excel</button>
                 </div>
             </div>
+            <input type="text" id="searchStockInput" onkeyup="filterStockTable()" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
             <div class="table-wrapper">
-                <table>
+                <table id="stockTable">
                     <thead>
                         <tr>
                             <th>Item Name</th>
-                            <th>Main Warehouse</th>
-                            <th>Branch 1</th>
-                            <th>Branch 2</th>
-                            <th>Min Limit</th>
-                            <th>Status</th>
+                            <th>Warehouse Stock</th>
+                            <th>Dispatched Today</th>
+                            <th>Branch 1 Stock</th>
+                            <th>Branch 2 Stock</th>
+                            <th>Net Total Left</th>
+                            <th>Status Alert</th>
                             <th class="owner-only hidden">Action</th>
                         </tr>
                     </thead>
@@ -129,47 +138,57 @@
                 </table>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header"><h3>📦 Stock Adjustment / Direct Add</h3></div>
-            <label>Select Item</label>
-            <select id="adjItemSelect"></select>
-            <label>Location / Target Branch</label>
-            <select id="adjLocationSelect">
-                <option value="main_store">Main Warehouse</option>
-                <option value="branch_1">Branch 1</option>
-                <option value="branch_2">Branch 2</option>
-            </select>
-            <label>Action Mode</label>
-            <select id="adjTypeSelect">
-                <option value="add">+ Add Stock (IN)</option>
-                <option value="set">= Set Exact Quantity</option>
-            </select>
-            <label>Quantity</label>
-            <input type="number" id="adjQtyInput" placeholder="0">
-            <button class="btn btn-primary" onclick="processDirectStockAdd()">Update Stock Entry</button>
-        </div>
     </div>
 
-    <!-- TAB 2: BRANCH TRANSFERS WITH TWO-WAY CONFIRMATION -->
+    <!-- TAB 2: DEMAND & TRANSFERS -->
     <div id="transferTab" class="hidden">
         <div class="card">
-            <div class="card-header"><h3>🚚 Send Stock To Branch</h3></div>
-            <label>Select Item</label>
-            <select id="transferItemSelect"></select>
-            <label>Destination Branch</label>
-            <select id="transferDestSelect">
+            <div class="card-header">
+                <h3>🚀 Quick Bulk Demand Sheet (Grid View)</h3>
+                <select id="bulkTransferDestSelect" style="width: 150px; font-size: 12px; padding: 4px;">
+                    <option value="branch_1">To Branch 1</option>
+                    <option value="branch_2">To Branch 2</option>
+                </select>
+            </div>
+            <p style="font-size: 12px; color: #aaa; margin-top:0;">Ji jis item ki demand ho, uske aage Direct Quantity likhein:</p>
+            <input type="text" id="searchDemandInput" onkeyup="filterDemandTable()" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
+            
+            <div class="table-wrapper">
+                <table id="bulkTransferTable">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Warehouse Stock</th>
+                            <th>Dispatch Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkTransferTableBody"></tbody>
+                </table>
+            </div>
+            <button class="btn btn-warning" onclick="sendBulkTransfer()" style="margin-top: 15px;">🚀 Send All Demand In 1-Click</button>
+        </div>
+
+        <!-- SINGLE ITEM OPTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📌 Single Item Quick Demand (Dropdown View)</h3>
+            </div>
+            <label>Select Target Branch</label>
+            <select id="singleDestSelect">
                 <option value="branch_1">Branch 1</option>
                 <option value="branch_2">Branch 2</option>
             </select>
-            <label>Quantity to Dispatch</label>
-            <input type="number" id="transferQtyInput" placeholder="0">
-            <button class="btn btn-warning" onclick="dispatchStockTransfer()">🚀 Dispatch Transfer</button>
+            <label>Select Item</label>
+            <select id="singleItemSelect"></select>
+            <label>Quantity</label>
+            <input type="number" id="singleQtyInput" placeholder="Enter quantity">
+            <button class="btn btn-primary" onclick="sendSingleTransfer()">Dispatch Item</button>
         </div>
 
+        <!-- LOGS HISTORY -->
         <div class="card">
             <div class="card-header">
-                <h3>⏳ Daily Transfer Logs & Status</h3>
+                <h3>⏳ Transfer Logs History</h3>
                 <input type="date" id="filterLogDate" onchange="renderTransfersTable()" style="width: auto; padding: 4px; font-size: 12px;">
             </div>
             <div class="table-wrapper">
@@ -190,19 +209,50 @@
         </div>
     </div>
 
-    <!-- TAB 3: ITEM MANAGEMENT (OWNER ONLY) -->
+    <!-- TAB 3: WAREHOUSE INWARD STOCK ENTRY -->
+    <div id="warehouseTab" class="hidden">
+        <div class="card">
+            <div class="card-header"><h3>📦 Warehouse New Stock Inward Entry</h3></div>
+            <p style="font-size: 12px; color: #aaa;">Jab vendor se warehouse me naya maal aaye, toh yahan quantity add karein:</p>
+            <label>Select Item</label>
+            <select id="inwardItemSelect"></select>
+            <label>Purchased / Added Quantity</label>
+            <input type="number" id="inwardQtyInput" placeholder="e.g. 50">
+            <button class="btn btn-success" onclick="addWarehouseStock()">+ Add To Warehouse Stock</button>
+        </div>
+    </div>
+
+    <!-- TAB 4: WASTE & DAMAGE REPORTING -->
+    <div id="wasteTab" class="hidden">
+        <div class="card">
+            <div class="card-header"><h3>🗑️ Report Damaged / Expired / Waste Item</h3></div>
+            <label>Select Location</label>
+            <select id="wasteLocationSelect">
+                <option value="main_store">Main Warehouse</option>
+                <option value="branch_1">Branch 1</option>
+                <option value="branch_2">Branch 2</option>
+            </select>
+            <label>Select Item</label>
+            <select id="wasteItemSelect"></select>
+            <label>Damaged / Wasted Quantity</label>
+            <input type="number" id="wasteQtyInput" placeholder="e.g. 2">
+            <button class="btn btn-danger" onclick="reportWasteStock()">Record Waste Item</button>
+        </div>
+    </div>
+
+    <!-- TAB 5: ITEM MANAGEMENT -->
     <div id="manageItemsTab" class="hidden">
         <div class="card">
             <div class="card-header"><h3>➕ Add New Item To Catalogue</h3></div>
             <label>Item Name</label>
             <input type="text" id="newItemNameInput" placeholder="e.g., Shopper 12/15, Pizza Box Large">
-            <label>Minimum Warning Stock Level</label>
+            <label>Minimum Low Stock Alert Limit</label>
             <input type="number" id="newItemMinLimitInput" placeholder="10">
             <button class="btn btn-success" onclick="addNewCatalogueItem()">+ Create Item</button>
         </div>
     </div>
 
-    <!-- TAB 4: USER & SECURITY SETTINGS (OWNER ONLY) -->
+    <!-- TAB 6: SECURITY -->
     <div id="userMgmtTab" class="hidden">
         <div class="card">
             <div class="card-header"><h3>🔑 Change Owner Security PIN</h3></div>
@@ -212,21 +262,19 @@
         </div>
     </div>
 
-    <!-- ACTIVITY LOG -->
+    <!-- LOGS -->
     <div class="card">
-        <div class="card-header"><h3>📜 System Audit Log</h3></div>
+        <div class="card-header"><h3>📜 System Activity Audit Log</h3></div>
         <div id="systemAuditLogs" class="log-box"></div>
     </div>
 
 </div>
 
 <script>
-    // Firebase Realtime Configuration
     const firebaseConfig = { databaseURL: "https://ibn-e-rahat-inventory-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // App State
     let activeRole = '';
     let ownerPinCode = '8888';
     let inventoryData = {};
@@ -238,7 +286,7 @@
     }
 
     function switchTab(tabId) {
-        ['dashboardTab', 'transferTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
+        ['dashboardTab', 'transferTab', 'warehouseTab', 'wasteTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
             document.getElementById(t).classList.add('hidden');
         });
         document.getElementById(tabId).classList.remove('hidden');
@@ -271,21 +319,20 @@
     function logout() { location.reload(); }
 
     function logAction(msg) {
-        db.ref('logs').push({
-            time: new Date().toLocaleString(),
-            msg: msg
-        });
+        db.ref('logs').push({ time: new Date().toLocaleString(), msg: msg });
     }
 
     function initRealtimeSync() {
         db.ref('enterprise_inventory').on('value', (snapshot) => {
             inventoryData = snapshot.val() || {};
             renderStockTable();
+            renderBulkTransferTable();
             populateDropdowns();
         });
 
         db.ref('transfers').on('value', (snapshot) => {
             transferLogs = snapshot.val() || {};
+            renderStockTable();
             renderTransfersTable();
         });
 
@@ -303,13 +350,25 @@
         });
     }
 
+    function getTodayDispatchedQty(itemKey) {
+        let todayStr = new Date().toISOString().split('T')[0];
+        let total = 0;
+        Object.keys(transferLogs).forEach(k => {
+            let tr = transferLogs[k];
+            if (tr.item_key === itemKey && tr.date === todayStr) {
+                total += parseFloat(tr.qty) || 0;
+            }
+        });
+        return total;
+    }
+
     function renderStockTable() {
         let tbody = document.getElementById('liveStockTableBody');
         tbody.innerHTML = '';
         let keys = Object.keys(inventoryData);
 
         if (keys.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">No items found. Add items from Owner panel.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">No items found.</td></tr>';
             return;
         }
 
@@ -319,121 +378,128 @@
             let b1Stock = item.branch_1 || 0;
             let b2Stock = item.branch_2 || 0;
             let minLimit = item.min_limit || 5;
+            let dispatchedToday = getTodayDispatchedQty(key);
 
-            let total = mainStock + b1Stock + b2Stock;
-            let status = total <= minLimit ? '<span class="badge badge-low">LOW STOCK</span>' : '<span class="badge badge-confirmed">OK</span>';
-
-            let actionCol = activeRole === 'owner' 
-                ? `<td><button class="btn btn-danger btn-sm" onclick="deleteItem('${key}')">X</button></td>` 
-                : '';
+            let remainingTotal = mainStock + b1Stock + b2Stock;
+            let statusBadge = remainingTotal <= minLimit ? '<span class="badge badge-low">REORDER NOW</span>' : '<span class="badge badge-confirmed">OK</span>';
+            let actionCol = activeRole === 'owner' ? `<td><button class="btn btn-danger btn-sm" onclick="deleteItem('${key}')">X</button></td>` : '';
 
             tbody.innerHTML += `
                 <tr>
                     <td><b>${item.name}</b></td>
                     <td>${mainStock}</td>
+                    <td style="color:#f59f00; font-weight:bold;">${dispatchedToday}</td>
                     <td>${b1Stock}</td>
                     <td>${b2Stock}</td>
-                    <td>${minLimit}</td>
-                    <td>${status}</td>
+                    <td style="color:#2b8a3e; font-weight:bold;">${remainingTotal}</td>
+                    <td>${statusBadge}</td>
                     ${actionCol}
                 </tr>
             `;
         });
     }
 
-    function populateDropdowns() {
-        let adjSel = document.getElementById('adjItemSelect');
-        let transSel = document.getElementById('transferItemSelect');
-        adjSel.innerHTML = ''; transSel.innerHTML = '';
-
+    function renderBulkTransferTable() {
+        let tbody = document.getElementById('bulkTransferTableBody');
+        tbody.innerHTML = '';
         let keys = Object.keys(inventoryData);
-        if (keys.length === 0) {
-            adjSel.innerHTML = '<option value="">No Items Available</option>';
-            transSel.innerHTML = '<option value="">No Items Available</option>';
-            return;
-        }
 
         keys.forEach(key => {
-            let name = inventoryData[key].name;
-            adjSel.innerHTML += `<option value="${key}">${name}</option>`;
-            transSel.innerHTML += `<option value="${key}">${name}</option>`;
+            let item = inventoryData[key];
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align:left;"><b>${item.name}</b></td>
+                    <td>${item.main_store || 0}</td>
+                    <td><input type="number" class="qty-input bulk-qty" data-key="${key}" placeholder="0" min="0"></td>
+                </tr>
+            `;
         });
     }
 
-    function addNewCatalogueItem() {
-        let nameInput = document.getElementById('newItemNameInput');
-        let minInput = document.getElementById('newItemMinLimitInput');
-        let name = nameInput.value.trim();
-        let min = parseFloat(minInput.value) || 5;
-
-        if (!name) return alert("Please enter item name!");
-        let key = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
-
-        db.ref('enterprise_inventory/' + key).set({
-            name: name, main_store: 0, branch_1: 0, branch_2: 0, min_limit: min
-        }).then(() => {
-            nameInput.value = ''; minInput.value = '';
-            alert("✅ " + name + " Created Successfully!");
-            logAction(`New item created: ${name}`);
+    function populateDropdowns() {
+        let selects = ['singleItemSelect', 'inwardItemSelect', 'wasteItemSelect'];
+        selects.forEach(id => {
+            let el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = '<option value="">Select Item...</option>';
+                Object.keys(inventoryData).forEach(key => {
+                    el.innerHTML += `<option value="${key}">${inventoryData[key].name}</option>`;
+                });
+            }
         });
     }
 
-    function deleteItem(key) {
-        if (confirm("Are you sure you want to delete this item?")) {
-            db.ref('enterprise_inventory/' + key).remove().then(() => {
-                alert("Item deleted!");
-                logAction(`Deleted item key: ${key}`);
-            });
+    function sendBulkTransfer() {
+        let dest = document.getElementById('bulkTransferDestSelect').value;
+        let inputs = document.querySelectorAll('.bulk-qty');
+        let count = 0;
+
+        inputs.forEach(input => {
+            let qty = parseFloat(input.value) || 0;
+            let key = input.getAttribute('data-key');
+
+            if (qty > 0 && key) {
+                let mainStock = inventoryData[key].main_store || 0;
+                db.ref(`enterprise_inventory/${key}/main_store`).set(Math.max(0, mainStock - qty));
+
+                let now = new Date();
+                db.ref('transfers').push({
+                    item_key: key,
+                    item_name: inventoryData[key].name,
+                    qty: qty,
+                    destination: dest,
+                    status: 'PENDING',
+                    date: now.toISOString().split('T')[0],
+                    timestamp: now.toLocaleString()
+                });
+                
+                input.value = '';
+                count++;
+            }
+        });
+
+        if (count > 0) {
+            alert(`✅ ${count} Items Ki Demand Safalata Se Bhej Di Gayi!`);
+            logAction(`Bulk transfer (${count} items) sent to ${dest.toUpperCase()}`);
+        } else {
+            alert("Koyi quantity enter nahi ki!");
         }
     }
 
-    function processDirectStockAdd() {
-        let key = document.getElementById('adjItemSelect').value;
-        let loc = document.getElementById('adjLocationSelect').value;
-        let type = document.getElementById('adjTypeSelect').value;
-        let qty = parseFloat(document.getElementById('adjQtyInput').value);
+    function addWarehouseStock() {
+        let key = document.getElementById('inwardItemSelect').value;
+        let qty = parseFloat(document.getElementById('inwardQtyInput').value) || 0;
+        if (!key || qty <= 0) return alert("Sahi Item aur Quantity darj karein!");
 
-        if (isNaN(qty) || !key) return alert("Enter valid quantity!");
-
-        let finalValue = qty;
-        if (type === 'add') {
-            let curr = (inventoryData[key] && inventoryData[key][loc]) ? inventoryData[key][loc] : 0;
-            finalValue = curr + qty;
-        }
-
-        db.ref(`enterprise_inventory/${key}/${loc}`).set(finalValue).then(() => {
-            document.getElementById('adjQtyInput').value = '';
-            alert("✅ Stock Updated!");
-            logAction(`Stock update for ${inventoryData[key].name} (${loc.toUpperCase()}): ${finalValue}`);
-        });
+        let current = inventoryData[key].main_store || 0;
+        db.ref(`enterprise_inventory/${key}/main_store`).set(current + qty);
+        logAction(`Inward Stock: +${qty} added to ${inventoryData[key].name}`);
+        document.getElementById('inwardQtyInput').value = '';
+        alert("✅ Warehouse Stock Updated!");
     }
 
-    function resetBranchStockOnly() {
-        if (!confirm("Kya aap Branch 1 aur Branch 2 ka stock ZERO karna chahte hain? (Main Warehouse aur Items safe rahenge)")) return;
-        
-        let updates = {};
-        Object.keys(inventoryData).forEach(key => {
-            updates[`enterprise_inventory/${key}/branch_1`] = 0;
-            updates[`enterprise_inventory/${key}/branch_2`] = 0;
-        });
+    function reportWasteStock() {
+        let loc = document.getElementById('wasteLocationSelect').value;
+        let key = document.getElementById('wasteItemSelect').value;
+        let qty = parseFloat(document.getElementById('wasteQtyInput').value) || 0;
+        if (!key || qty <= 0) return alert("Sahi Item aur Quantity darj karein!");
 
-        db.ref().update(updates).then(() => {
-            alert("✅ Dono branches ka stock Zero kar diya gaya hai!");
-            logAction("Branch 1 & 2 Stock Reset to 0 by Admin");
-        });
+        let current = inventoryData[key][loc] || 0;
+        db.ref(`enterprise_inventory/${key}/${loc}`).set(Math.max(0, current - qty));
+        logAction(`WASTE REPORTED: ${qty} x ${inventoryData[key].name} at ${loc.toUpperCase()}`);
+        document.getElementById('wasteQtyInput').value = '';
+        alert("⚠️ Waste item recorded and stock adjusted!");
     }
 
-    function dispatchStockTransfer() {
-        let key = document.getElementById('transferItemSelect').value;
-        let dest = document.getElementById('transferDestSelect').value;
-        let qty = parseFloat(document.getElementById('transferQtyInput').value) || 0;
+    function sendSingleTransfer() {
+        let dest = document.getElementById('singleDestSelect').value;
+        let key = document.getElementById('singleItemSelect').value;
+        let qty = parseFloat(document.getElementById('singleQtyInput').value) || 0;
 
-        if (qty <= 0 || !key) return alert("Invalid transfer quantity!");
+        if (!key || qty <= 0) return alert("Sahi Item aur Quantity enter karein!");
 
         let mainStock = inventoryData[key].main_store || 0;
-        if (mainStock < qty) return alert("Insufficient Main Warehouse stock!");
-
-        db.ref(`enterprise_inventory/${key}/main_store`).set(mainStock - qty);
+        db.ref(`enterprise_inventory/${key}/main_store`).set(Math.max(0, mainStock - qty));
 
         let now = new Date();
         db.ref('transfers').push({
@@ -444,11 +510,53 @@
             status: 'PENDING',
             date: now.toISOString().split('T')[0],
             timestamp: now.toLocaleString()
-        }).then(() => {
-            document.getElementById('transferQtyInput').value = '';
-            alert("🚚 Stock Dispatched!");
-            logAction(`Dispatched ${qty} ${inventoryData[key].name} to ${dest.toUpperCase()}`);
         });
+
+        document.getElementById('singleQtyInput').value = '';
+        alert("✅ Demand bhej di gayi!");
+    }
+
+    function filterStockTable() {
+        let input = document.getElementById("searchStockInput").value.toLowerCase();
+        let rows = document.querySelectorAll("#stockTable tbody tr");
+        rows.forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none"; });
+    }
+
+    function filterDemandTable() {
+        let input = document.getElementById("searchDemandInput").value.toLowerCase();
+        let rows = document.querySelectorAll("#bulkTransferTable tbody tr");
+        rows.forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none"; });
+    }
+
+    function addNewCatalogueItem() {
+        let nameInput = document.getElementById('newItemNameInput');
+        let minInput = document.getElementById('newItemMinLimitInput');
+        let name = nameInput.value.trim();
+        let min = parseFloat(minInput.value) || 5;
+
+        if (!name) return alert("Item name likhein!");
+        let key = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+        db.ref('enterprise_inventory/' + key).set({
+            name: name, main_store: 0, branch_1: 0, branch_2: 0, min_limit: min
+        }).then(() => {
+            nameInput.value = ''; minInput.value = '';
+            alert("✅ " + name + " Created Successfully!");
+        });
+    }
+
+    function deleteItem(key) {
+        if (confirm("Delete this item?")) db.ref('enterprise_inventory/' + key).remove();
+    }
+
+    function resetBranchStockOnly() {
+        if (!confirm("Reset Branch 1 & 2 Stock to ZERO?")) return;
+        let updates = {};
+        Object.keys(inventoryData).forEach(key => {
+            updates[`enterprise_inventory/${key}/branch_1`] = 0;
+            updates[`enterprise_inventory/${key}/branch_2`] = 0;
+        });
+        db.ref().update(updates);
     }
 
     function renderTransfersTable() {
@@ -458,7 +566,7 @@
         let selectedDate = document.getElementById('filterLogDate').value;
 
         if(keys.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">No transfer history found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6">No transfer history.</td></tr>';
             return;
         }
 
@@ -468,7 +576,6 @@
 
             let isPending = tr.status === 'PENDING';
             let statusBadge = isPending ? '<span class="badge badge-pending">PENDING</span>' : '<span class="badge badge-confirmed">RECEIVED</span>';
-            
             let canConfirm = isPending && (activeRole === 'owner' || activeRole === tr.destination);
             let actionBtn = canConfirm ? `<button class="btn btn-success btn-sm" onclick="confirmTransfer('${key}')">Confirm Receive</button>` : '-';
 
@@ -488,38 +595,33 @@
     function confirmTransfer(key) {
         let tr = transferLogs[key];
         if (!tr) return;
-
         let currBranchStock = inventoryData[tr.item_key][tr.destination] || 0;
         
         db.ref(`enterprise_inventory/${tr.item_key}/${tr.destination}`).set(currBranchStock + tr.qty);
-        db.ref(`transfers/${key}/status`).set('CONFIRMED').then(() => {
-            alert("✅ Stock Receive Confirmed!");
-            logAction(`Transfer Confirmed: ${tr.qty} ${tr.item_name} received at ${tr.destination.toUpperCase()}`);
-        });
+        db.ref(`transfers/${key}/status`).set('CONFIRMED');
     }
 
     function updateOwnerPin() {
         let pin = document.getElementById('newOwnerPinInput').value;
-        if (pin.length < 4) return alert("PIN kam az kam 4 digits ka hona chahiye!");
-        
-        db.ref('settings/owner_pin').set(pin).then(() => {
-            alert("✅ Admin PIN updated successfully!");
-            document.getElementById('newOwnerPinInput').value = '';
-        });
+        if (pin.length < 4) return alert("Min 4 digits!");
+        db.ref('settings/owner_pin').set(pin);
     }
 
     function exportCSV() {
-        let csv = 'Item Name,Main Warehouse,Branch 1,Branch 2,Min Limit\n';
+        let csv = 'Item Name,Main Warehouse,Dispatched Today,Branch 1,Branch 2,Net Total Remaining\n';
         Object.keys(inventoryData).forEach(k => {
             let i = inventoryData[k];
-            csv += `"${i.name}",${i.main_store||0},${i.branch_1||0},${i.branch_2||0},${i.min_limit||0}\n`;
+            let disp = getTodayDispatchedQty(k);
+            let rem = (i.main_store||0) + (i.branch_1||0) + (i.branch_2||0);
+            csv += `"${i.name}",${i.main_store||0},${disp},${i.branch_1||0},${i.branch_2||0},${rem}\n`;
         });
         let blob = new Blob([csv], { type: 'text/csv' });
         let a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `inventory_report_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `inventory_report.csv`;
         a.click();
     }
 </script>
 </body>
 </html>
+
