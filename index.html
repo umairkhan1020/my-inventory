@@ -1,15 +1,3 @@
-Restaurant inventory aur branch supply operations ko completely professional aur auto-pilot par chalane ke liye, 5 boht hi aham aur zaroori features abhi missing hain jo aapke daily business tracker ko mazeed powerful bana denge:
-Missing Features Jo Naye Code Me Add Kiye Hain:
- * Warehouse Purchase / Stock Entry Form (Naya Stock Inward System):
-   * Phele warehouse me naya maal (e.g. Chowmin 50, Ketchup 100) add karne ka direct tareeqa nahi tha. Ab warehouse manager direct "+ Stock Add" kar sakta hai.
- * Auto Minimum Low-Stock Alert System (Red Highlighting):
-   * Jab kisi item ka stock safety limit se kam hoga, toh live dashboard par Red Alert Tag aayega taake pta chale ke kaunsa item khatam hone wala hai aur supplier ko order dena hai.
- * Branch Waste & Loss Tracker (Zaya Maal Ka Hisab):
-   * Restaurant me items kharab hote hain, expire hote hain ya gir jate hain. Ab branch managers "Report Damage / Waste" karke zaya hone wale stock ka hisab alag se record kar sakte hain.
- * Detailed History Log with Excel Report Export:
-   * Aaj kis branch ko kitna maal gaya, kitna zaya hua, aur kitna warehouse me aaya — yeh sab date-wise track hoga aur Excel file me download ho sakega.
-Complete Updated Code (index.html)
-Niche diya gaya mukammal updated code copy karke apni GitHub repository me replace kar dein:
 <!DOCTYPE html>
 <html lang="ur">
 <head>
@@ -67,14 +55,11 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
 <div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
 <div id="sideDrawer" class="side-drawer">
     <div style="text-align: center; margin-bottom: 20px;">
-        <img src="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg" style="width: 60px; height: 60px; border-radius: 50%;">
         <h4 style="margin-top: 8px;">Ibn E Rahat ERP</h4>
         <small id="drawerUserRole" style="color: #4dabf7;"></small>
     </div>
     <div class="drawer-item active" onclick="switchTab('dashboardTab')">📊 Dashboard & Live Stock</div>
     <div class="drawer-item" onclick="switchTab('transferTab')">🚚 Demand & Dispatch</div>
-    <div class="drawer-item" onclick="switchTab('warehouseTab')">📦 Warehouse Inward Stock</div>
-    <div class="drawer-item" onclick="switchTab('wasteTab')">🗑️ Waste & Damage Entry</div>
     <div class="drawer-item owner-only hidden" onclick="switchTab('manageItemsTab')">➕ Item Management</div>
     <div class="drawer-item owner-only hidden" onclick="switchTab('userMgmtTab')">👥 Staff & Security</div>
     <div class="drawer-item" onclick="logout()" style="color: #e03131; margin-top: 30px;">🚪 Logout</div>
@@ -88,7 +73,6 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
 
 <div id="loginScreen" class="container">
     <div class="card login-card">
-        <img src="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg" style="width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px;">
         <h2>Ibn E Rahat ERP</h2>
         <p style="font-size: 12px; color: #888;">Live Multi-Branch Inventory System</p>
         
@@ -209,38 +193,7 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
         </div>
     </div>
 
-    <!-- TAB 3: WAREHOUSE INWARD STOCK ENTRY -->
-    <div id="warehouseTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>📦 Warehouse New Stock Inward Entry</h3></div>
-            <p style="font-size: 12px; color: #aaa;">Jab vendor se warehouse me naya maal aaye, toh yahan quantity add karein:</p>
-            <label>Select Item</label>
-            <select id="inwardItemSelect"></select>
-            <label>Purchased / Added Quantity</label>
-            <input type="number" id="inwardQtyInput" placeholder="e.g. 50">
-            <button class="btn btn-success" onclick="addWarehouseStock()">+ Add To Warehouse Stock</button>
-        </div>
-    </div>
-
-    <!-- TAB 4: WASTE & DAMAGE REPORTING -->
-    <div id="wasteTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>🗑️ Report Damaged / Expired / Waste Item</h3></div>
-            <label>Select Location</label>
-            <select id="wasteLocationSelect">
-                <option value="main_store">Main Warehouse</option>
-                <option value="branch_1">Branch 1</option>
-                <option value="branch_2">Branch 2</option>
-            </select>
-            <label>Select Item</label>
-            <select id="wasteItemSelect"></select>
-            <label>Damaged / Wasted Quantity</label>
-            <input type="number" id="wasteQtyInput" placeholder="e.g. 2">
-            <button class="btn btn-danger" onclick="reportWasteStock()">Record Waste Item</button>
-        </div>
-    </div>
-
-    <!-- TAB 5: ITEM MANAGEMENT -->
+    <!-- TAB 3: ITEM MANAGEMENT -->
     <div id="manageItemsTab" class="hidden">
         <div class="card">
             <div class="card-header"><h3>➕ Add New Item To Catalogue</h3></div>
@@ -252,7 +205,7 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
         </div>
     </div>
 
-    <!-- TAB 6: SECURITY -->
+    <!-- TAB 4: SECURITY -->
     <div id="userMgmtTab" class="hidden">
         <div class="card">
             <div class="card-header"><h3>🔑 Change Owner Security PIN</h3></div>
@@ -286,7 +239,7 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
     }
 
     function switchTab(tabId) {
-        ['dashboardTab', 'transferTab', 'warehouseTab', 'wasteTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
+        ['dashboardTab', 'transferTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
             document.getElementById(t).classList.add('hidden');
         });
         document.getElementById(tabId).classList.remove('hidden');
@@ -417,16 +370,13 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
     }
 
     function populateDropdowns() {
-        let selects = ['singleItemSelect', 'inwardItemSelect', 'wasteItemSelect'];
-        selects.forEach(id => {
-            let el = document.getElementById(id);
-            if (el) {
-                el.innerHTML = '<option value="">Select Item...</option>';
-                Object.keys(inventoryData).forEach(key => {
-                    el.innerHTML += `<option value="${key}">${inventoryData[key].name}</option>`;
-                });
-            }
-        });
+        let el = document.getElementById('singleItemSelect');
+        if (el) {
+            el.innerHTML = '<option value="">Select Item...</option>';
+            Object.keys(inventoryData).forEach(key => {
+                el.innerHTML += `<option value="${key}">${inventoryData[key].name}</option>`;
+            });
+        }
     }
 
     function sendBulkTransfer() {
@@ -464,31 +414,6 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
         } else {
             alert("Koyi quantity enter nahi ki!");
         }
-    }
-
-    function addWarehouseStock() {
-        let key = document.getElementById('inwardItemSelect').value;
-        let qty = parseFloat(document.getElementById('inwardQtyInput').value) || 0;
-        if (!key || qty <= 0) return alert("Sahi Item aur Quantity darj karein!");
-
-        let current = inventoryData[key].main_store || 0;
-        db.ref(`enterprise_inventory/${key}/main_store`).set(current + qty);
-        logAction(`Inward Stock: +${qty} added to ${inventoryData[key].name}`);
-        document.getElementById('inwardQtyInput').value = '';
-        alert("✅ Warehouse Stock Updated!");
-    }
-
-    function reportWasteStock() {
-        let loc = document.getElementById('wasteLocationSelect').value;
-        let key = document.getElementById('wasteItemSelect').value;
-        let qty = parseFloat(document.getElementById('wasteQtyInput').value) || 0;
-        if (!key || qty <= 0) return alert("Sahi Item aur Quantity darj karein!");
-
-        let current = inventoryData[key][loc] || 0;
-        db.ref(`enterprise_inventory/${key}/${loc}`).set(Math.max(0, current - qty));
-        logAction(`WASTE REPORTED: ${qty} x ${inventoryData[key].name} at ${loc.toUpperCase()}`);
-        document.getElementById('wasteQtyInput').value = '';
-        alert("⚠️ Waste item recorded and stock adjusted!");
     }
 
     function sendSingleTransfer() {
@@ -624,4 +549,3 @@ Niche diya gaya mukammal updated code copy karke apni GitHub repository me repla
 </script>
 </body>
 </html>
-
