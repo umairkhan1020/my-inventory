@@ -407,7 +407,6 @@
             justify-content: flex-end;
             gap: 8px;
         }
-
     </style>
 </head>
 <body>
@@ -596,4 +595,320 @@
 
                 <div class="btn-group">
                     <button class="btn btn-blue" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
-                    <button class=
+                    <button class="btn btn-red" onclick="clearSavedNumber()"><i class="fas fa-times"></i> Remove Saved Number</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- WHATSAPP SHARE MODAL -->
+    <div class="modal" id="whatsappModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 style="color: var(--accent-green);"><i class="fab fa-whatsapp"></i> WhatsApp Sharing Options</h4>
+                <button class="menu-btn" onclick="closeWhatsAppModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Select how you want to send this report:</p>
+                
+                <div class="form-group">
+                    <label>Send Option</label>
+                    <select id="modalSendMode" class="form-control" onchange="toggleModalPhoneInput()">
+                        <option value="DEFAULT">Use Direct Share (Pick Contact on WhatsApp)</option>
+                        <option value="SAVED">Use Saved Number (<span id="modalSavedNumLabel">None</span>)</option>
+                        <option value="CUSTOM">Type Temporary Number</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="modalCustomPhoneGroup" style="display: none;">
+                    <label>Enter Phone Number (e.g. 923001234567)</label>
+                    <input type="text" id="modalCustomPhone" class="form-control" placeholder="923xxxxxxxxx">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeWhatsAppModal()">Cancel</button>
+                <button class="btn btn-green" onclick="executeWhatsAppSend()"><i class="fab fa-whatsapp"></i> Send Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial Data Setup
+        let stockData = JSON.parse(localStorage.getItem('ibn_stock')) || [
+            { id: 1, name: 'Black olive', cat: 'INGREDIENT', warehouse: 10, dispatched: 5, b1: 5, b2: 0, minAlert: 2 },
+            { id: 2, name: 'Chicken powder', cat: 'INGREDIENT', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 5 },
+            { id: 3, name: 'Chili garlic', cat: 'SAUCE', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 3 },
+            { id: 4, name: 'Chowmin masla', cat: 'INGREDIENT', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 2 },
+            { id: 5, name: 'Forks 🍴', cat: 'PACKAGING', warehouse: 10, dispatched: 2, b1: 2, b2: 0, minAlert: 10 },
+            { id: 6, name: 'ketchup sashy', cat: 'SAUCE', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 20 },
+            { id: 7, name: 'Khaki', cat: 'PACKAGING', warehouse: 0, dispatched: 4, b1: 0, b2: 0, minAlert: 5 },
+            { id: 8, name: 'M.pack 750ml', cat: 'PACKAGING', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 10 },
+            { id: 9, name: 'Oil tem', cat: 'INGREDIENT', warehouse: 0, dispatched: 0, b1: 0, b2: 0, minAlert: 2 },
+            { id: 10, name: 'Pfc packing', cat: 'PACKAGING', warehouse: 0, dispatched: 6, b1: 0, b2: 0, minAlert: 10 }
+        ];
+
+        let ledgerData = JSON.parse(localStorage.getItem('ibn_ledger')) || [
+            { date: '18/08/2026, 11:50:32 pm', item: 'Black olive', qty: 5, branch: 'BRANCH 1', type: 'DISPATCH' },
+            { date: '18/08/2026, 8:12:53 pm', item: 'Forks 🍴', qty: 2, branch: 'BRANCH 1', type: 'DISPATCH' },
+            { date: '18/08/2026, 8:01:59 pm', item: 'Khaki', qty: 4, branch: 'BRANCH 1', type: 'DISPATCH' }
+        ];
+
+        let currentFilter = 'ALL';
+        let pendingWhatsAppType = 'summary';
+
+        function saveData() {
+            localStorage.setItem('ibn_stock', JSON.stringify(stockData));
+            localStorage.setItem('ibn_ledger', JSON.stringify(ledgerData));
+            updateKPIs();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active-view');
+            const navBtn = document.getElementById('nav-' + viewId.replace('View', ''));
+            if(navBtn) navBtn.classList.add('active');
+            
+            if (document.getElementById('sidebar').classList.contains('active')) {
+                toggleSidebar();
+            }
+
+            if (viewId === 'dashboardView') renderStockTable();
+            if (viewId === 'ledgerView') renderLedgerTable();
+            if (viewId === 'wasteView') populateWasteDropdown();
+            if (viewId === 'settingsView') loadSettingsView();
+        }
+
+        function updateKPIs() {
+            document.getElementById('kpiTotal').innerText = stockData.length;
+            let lowCount = stockData.filter(i => (i.b1 + i.b2 + i.warehouse) <= i.minAlert).length;
+            document.getElementById('kpiLow').innerText = lowCount;
+            let totalDispatched = stockData.reduce((acc, curr) => acc + curr.dispatched, 0);
+            document.getElementById('kpiDispatched').innerText = totalDispatched;
+        }
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderStockTable();
+        }
+
+        function renderStockTable() {
+            const tbody = document.getElementById('stockTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            stockData.forEach(item => {
+                const totalStock = item.b1 + item.b2 + item.warehouse;
+                const isLow = totalStock <= item.minAlert;
+
+                if (currentFilter === 'LOW' && !isLow) return;
+                if (currentFilter === 'INGREDIENT' && item.cat !== 'INGREDIENT') return;
+                if (currentFilter === 'PACKAGING' && item.cat !== 'PACKAGING') return;
+                if (search && !item.name.toLowerCase().includes(search)) return;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${item.name}</strong> <span class="cat-badge">${item.cat}</span></td>
+                    <td>${item.warehouse}</td>
+                    <td style="color: var(--accent-orange); font-weight: bold;">${item.dispatched}</td>
+                    <td>${item.b1}</td>
+                    <td>${item.b2}</td>
+                    <td>
+                        <span class="status-badge ${isLow ? 'status-reorder' : 'status-ok'}">
+                            ${isLow ? 'REORDER NOW' : 'OK'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateKPIs();
+        }
+
+        function renderLedgerTable() {
+            const tbody = document.getElementById('ledgerTableBody');
+            const search = document.getElementById('ledgerSearch').value.toLowerCase();
+            const branch = document.getElementById('branchFilter').value;
+            tbody.innerHTML = '';
+
+            ledgerData.forEach(entry => {
+                if (branch !== 'ALL' && entry.branch !== branch) return;
+                if (search && (!entry.item.toLowerCase().includes(search) && !entry.branch.toLowerCase().includes(search))) return;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: var(--text-muted); font-size: 11px;">${entry.date}</td>
+                    <td><strong>${entry.item}</strong></td>
+                    <td style="color: var(--accent-blue); font-weight: bold;">${entry.qty}</td>
+                    <td>${entry.branch}</td>
+                    <td><span class="status-badge status-ok">${entry.type}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateWasteDropdown() {
+            const select = document.getElementById('wasteItem');
+            select.innerHTML = '';
+            stockData.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.innerText = `${item.name} (Warehouse:${item.warehouse} | B1:${item.b1} | B2:${item.b2})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function processDeduction() {
+            const itemId = parseInt(document.getElementById('wasteItem').value);
+            const loc = document.getElementById('wasteLocation').value;
+            const qty = parseInt(document.getElementById('wasteQty').value) || 0;
+            const reason = document.getElementById('wasteReason').value;
+
+            if (qty <= 0) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+
+            const item = stockData.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (loc === 'BRANCH_1') item.b1 = Math.max(0, item.b1 - qty);
+            else if (loc === 'BRANCH_2') item.b2 = Math.max(0, item.b2 - qty);
+            else if (loc === 'MAIN_STORE') item.warehouse = Math.max(0, item.warehouse - qty);
+
+            const now = new Date().toLocaleString();
+            ledgerData.unshift({
+                date: now,
+                item: item.name,
+                qty: qty,
+                branch: loc.replace('_', ' '),
+                type: `WASTE (${reason})`
+            });
+
+            saveData();
+            alert(`Deducted ${qty} ${item.name} successfully!`);
+            switchView('dashboardView');
+        }
+
+        function confirmClearHistory() {
+            if (confirm("Are you sure you want to clear the entire dispatch/wastage ledger history? Main stock will remain safe.")) {
+                ledgerData = [];
+                saveData();
+                renderLedgerTable();
+            }
+        }
+
+        function loadSettingsView() {
+            const savedNum = localStorage.getItem('ibn_wa_number') || '';
+            document.getElementById('whatsappNumberInput').value = savedNum;
+        }
+
+        function saveSettings() {
+            const num = document.getElementById('whatsappNumberInput').value.trim();
+            localStorage.setItem('ibn_wa_number', num);
+            alert("Settings Saved Successfully!");
+        }
+
+        function clearSavedNumber() {
+            localStorage.removeItem('ibn_wa_number');
+            document.getElementById('whatsappNumberInput').value = '';
+            alert("Saved WhatsApp number removed!");
+        }
+
+        function openWhatsAppModal(type) {
+            pendingWhatsAppType = type;
+            const savedNum = localStorage.getItem('ibn_wa_number');
+            document.getElementById('modalSavedNumLabel').innerText = savedNum || 'None Saved';
+            document.getElementById('whatsappModal').classList.add('active');
+        }
+
+        function closeWhatsAppModal() {
+            document.getElementById('whatsappModal').classList.remove('active');
+        }
+
+        function toggleModalPhoneInput() {
+            const mode = document.getElementById('modalSendMode').value;
+            document.getElementById('modalCustomPhoneGroup').style.display = (mode === 'CUSTOM') ? 'block' : 'none';
+        }
+
+        function executeWhatsAppSend() {
+            const mode = document.getElementById('modalSendMode').value;
+            let phone = '';
+
+            if (mode === 'SAVED') {
+                phone = localStorage.getItem('ibn_wa_number') || '';
+                if (!phone) {
+                    alert("No saved number found! Please select another option or set it in Settings.");
+                    return;
+                }
+            } else if (mode === 'CUSTOM') {
+                phone = document.getElementById('modalCustomPhone').value.trim();
+                if (!phone) {
+                    alert("Please enter a phone number.");
+                    return;
+                }
+            }
+
+            let message = '';
+            const today = new Date().toLocaleDateString();
+
+            if (pendingWhatsAppType === 'summary') {
+                message = `📊 *IBN E RAHAT ENTERPRISE - DAILY STOCK SUMMARY*\n📅 Date: ${today}\n\n`;
+                let lowItems = [];
+                stockData.forEach(item => {
+                    const total = item.b1 + item.b2 + item.warehouse;
+                    if (total <= item.minAlert) lowItems.push(`${item.name} (Stock: ${total})`);
+                });
+
+                message += `📦 *Total Unique Items:* ${stockData.length}\n`;
+                message += `⚠️ *Low Stock Items (${lowItems.length}):*\n` + (lowItems.length > 0 ? lowItems.map(i => `• ${i}`).join('\n') : 'All items OK') + `\n\n`;
+                message += `🚚 *Today Dispatched Summary:*\n`;
+                stockData.filter(i => i.dispatched > 0).forEach(i => {
+                    message += `• ${i.name}: ${i.dispatched}\n`;
+                });
+            } else {
+                message = `📜 *IBN E RAHAT ENTERPRISE - DISPATCH LEDGER*\n📅 Date: ${today}\n\n`;
+                ledgerData.slice(0, 10).forEach(l => {
+                    message += `• ${l.date} - ${l.item} (${l.qty}) -> ${l.branch} [${l.type}]\n`;
+                });
+            }
+
+            const encodedMsg = encodeURIComponent(message);
+            closeWhatsAppModal();
+
+            if (phone) {
+                window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`, '_blank');
+            } else {
+                window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, '_blank');
+            }
+        }
+
+        function exportToExcel() {
+            let csv = 'Item Name,Category,Warehouse,Dispatched Today,Branch 1,Branch 2,Status\n';
+            stockData.forEach(i => {
+                const total = i.b1 + i.b2 + i.warehouse;
+                const status = total <= i.minAlert ? 'REORDER NOW' : 'OK';
+                csv += `"${i.name}","${i.cat}",${i.warehouse},${i.dispatched},${i.b1},${i.b2},"${status}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `Stock_Report_${new Date().toISOString().slice(0,10)}.csv`);
+            a.click();
+        }
+
+        // Initialize App
+        renderStockTable();
+    </script>
+</body>
+</html>
