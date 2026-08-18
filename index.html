@@ -1,870 +1,599 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ibn E Rahat - Enterprise Live Restaurant ERP</title>
-    <link rel="icon" href="https://i.ibb.co/7dRfTJ1Y/1001118047.jpg">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <title>Ibn E Rahat Enterprise - Inventory & Ledger System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #121212; color: #e0e0e0; margin: 0; padding: 0; overflow-x: hidden; }
-        
-        .navbar { background: #1e1e1e; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
-        .menu-btn { background: none; border: none; color: #4dabf7; font-size: 24px; cursor: pointer; }
-        .side-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #181818; border-right: 1px solid #333; z-index: 200; transition: 0.3s; padding: 20px 15px; overflow-y: auto; }
-        .side-drawer.active { left: 0; }
-        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: none; }
-        .drawer-overlay.active { display: block; }
-        .drawer-item { padding: 12px; border-radius: 6px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; margin-bottom: 6px; }
-        .drawer-item:hover, .drawer-item.active { background: #2b3a4a; color: #4dabf7; }
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --card-border: #2d2d2d;
+            --accent-blue: #00adb5;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-orange: #f39c12;
+            --text-main: #eeeeee;
+            --text-muted: #a0a0a0;
+            --table-header: #181818;
+            --table-hover: #262626;
+        }
 
-        .container { padding: 15px; max-width: 1000px; margin: 0 auto; }
-        .card { background: #1e1e1e; padding: 16px; border-radius: 10px; border: 1px solid #2d2d2d; margin-bottom: 16px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #2d2d2d; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-        h3, h4 { color: #4dabf7; margin: 0; }
-        
-        label { font-size: 12px; font-weight: bold; color: #aaa; display: block; margin-top: 10px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #3d3d3d; background: #262626; color: white; border-radius: 6px; margin-top: 4px; font-size: 14px; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 12px; }
-        .btn-primary { background: #1971c2; color: white; }
-        .btn-success { background: #2b8a3e; color: white; }
-        .btn-whatsapp { background: #25D366; color: white; }
-        .btn-warning { background: #f59f00; color: #121212; }
-        .btn-danger { background: #e03131; color: white; }
-        .btn-sm { padding: 6px 10px; font-size: 12px; margin-top: 0; width: auto; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-        .table-wrapper { overflow-x: auto; max-height: 500px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #2d2d2d; padding: 10px 8px; text-align: center; font-size: 13px; }
-        th { background: #2b3a4a; color: #4dabf7; position: sticky; top: 0; z-index: 10; }
-        tbody tr:nth-child(even) { background-color: #1e1e1e; }
-        tbody tr:nth-child(odd) { background-color: #262626; }
-        
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
-        .badge-pending { background: #f59f00; color: #121212; }
-        .badge-confirmed { background: #2b8a3e; color: white; }
-        .badge-low { background: #e03131; color: white; animation: blink 1.5s infinite; }
-        .badge-fresh { background: #9c36b5; color: white; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding-bottom: 30px;
+        }
 
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* Top Header */
+        header {
+            background-color: #1a1a1a;
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        .qty-input { width: 85px; text-align: center; padding: 8px; font-size: 14px; margin-top: 0; background: #181818; border: 1px solid #444; border-radius: 4px; color: #fff; }
-        .qty-input:focus { border-color: #4dabf7; outline: none; }
-        .hidden { display: none !important; }
-        .login-card { max-width: 360px; margin: 40px auto; text-align: center; }
-        .log-box { max-height: 160px; overflow-y: auto; font-size: 12px; color: #999; }
-        .log-item { padding: 6px 0; border-bottom: 1px solid #2d2d2d; }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .role-badge {
+            background-color: #1b4d3e;
+            color: var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: #181818;
+            border-right: 1px solid var(--card-border);
+            z-index: 200;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-menu li a:hover, .sidebar-menu li a.active {
+            background-color: #252525;
+            border-left: 4px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 150;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* View Switching */
+        .app-view {
+            display: none;
+        }
+
+        .app-view.active-view {
+            display: block;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .kpi-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .kpi-total { color: var(--accent-blue); }
+        .kpi-low { color: var(--accent-red); }
+        .kpi-dispatch { color: var(--accent-orange); }
+
+        /* Action Panel & Settings */
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+        }
+
+        /* Filter Badges */
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .filter-btn {
+            background-color: #2a2a2a;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background-color: #121212;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 10px 10px 10px 35px;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--table-header);
+            color: var(--accent-blue);
+            padding: 10px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--card-border);
+            background-color: var(--card-bg);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: var(--table-hover);
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
+        .status-reorder { background-color: rgba(231, 76, 60, 0.2); color: var(--accent-red); animation: blink 1.5s infinite; }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .cat-badge {
+            font-size: 9px;
+            background: #2a2a2a;
+            color: #888;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #121212;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .btn-green { background-color: #27ae60; color: #fff; }
+        .btn-blue { background-color: #2980b9; color: #fff; }
+        .btn-red { background-color: #c0392b; color: #fff; }
+        .btn-orange { background-color: #d35400; color: #fff; }
+        .btn-secondary { background-color: #444; color: #fff; }
+
+        /* Modal Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            max-width: 400px;
+            width: 100%;
+            padding: 18px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .modal-footer {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
     </style>
 </head>
 <body>
 
-<div id="drawerOverlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
-<div id="sideDrawer" class="side-drawer">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <h4 style="margin-top: 8px;">Ibn E Rahat ERP</h4>
-        <small id="drawerUserRole" style="color: #4dabf7;"></small>
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="app-title">Ibn E Rahat Enterprise</div>
+        </div>
+        <span class="role-badge">OWNER MODE</span>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span style="font-weight: bold; color: var(--accent-blue);">Main Navigation</span>
+            <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" onclick="switchView('dashboardView')" class="active" id="nav-dashboard"><i class="fas fa-chart-line"></i> Live Stock Dashboard</a></li>
+            <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch & Stock Ledger</a></li>
+            <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Consumption & Wastage</a></li>
+            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> WhatsApp & Settings</a></li>
+        </ul>
     </div>
-    <div class="drawer-item active" onclick="switchTab('dashboardTab')">📊 Live Stock Tracker</div>
-    <div class="drawer-item dispatch-only hidden" onclick="switchTab('transferTab')">🚚 Bulk Dispatch Sheet</div>
-    <div class="drawer-item dispatch-only hidden" onclick="switchTab('inwardTab')">📥 Bulk Inward Sheet</div>
-    <div class="drawer-item" onclick="switchTab('dailyFreshTab')">🥩 Daily Fresh Items Entry</div>
-    <div class="drawer-item branch-only hidden" onclick="switchTab('demandRequestTab')">📑 Request Stock Demand</div>
-    <div class="drawer-item" onclick="switchTab('wasteTab')">🗑️ Waste / Consumption</div>
-    <div class="drawer-item owner-only hidden" onclick="switchTab('manageItemsTab')">➕ Item Management</div>
-    <div class="drawer-item owner-only hidden" onclick="switchTab('userMgmtTab')">👥 Staff & Security</div>
-    <div class="drawer-item" onclick="logout()" style="color: #e03131; margin-top: 30px;">🚪 Logout</div>
-</div>
 
-<div class="navbar">
-    <button class="menu-btn" onclick="toggleDrawer()">☰</button>
-    <h3 style="font-size: 16px;">Ibn E Rahat Enterprise</h3>
-    <span id="headerRoleBadge" class="badge badge-confirmed">STAFF</span>
-</div>
+    <div class="container">
 
-<div id="loginScreen" class="container">
-    <div class="card login-card">
-        <h2>Ibn E Rahat ERP</h2>
-        <p style="font-size: 12px; color: #888;">Live Multi-Branch Inventory System</p>
-        
-        <label>Select Login Mode</label>
-        <select id="loginRoleSelect">
-            <option value="owner">Owner (Admin Access)</option>
-            <option value="main_store">Main Store / Warehouse Manager</option>
-            <option value="branch_1">Branch 1 Manager</option>
-            <option value="branch_2">Branch 2 Manager</option>
-        </select>
-
-        <label>Enter Security PIN</label>
-        <input type="password" id="loginPinInput" placeholder="Enter Security PIN">
-
-        <button class="btn btn-primary" onclick="loginSystem()">Login To Portal</button>
-    </div>
-</div>
-
-<div id="appContainer" class="container hidden">
-
-    <!-- TAB 1: DASHBOARD & LIVE STOCK OVERVIEW -->
-    <div id="dashboardTab">
-        <div class="card">
-            <div class="card-header">
-                <h3>📊 Live Stock Tracker</h3>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="btn btn-whatsapp btn-sm" onclick="shareStockWhatsApp()">📲 Share Stock WhatsApp</button>
-                    <button class="btn btn-warning btn-sm owner-only hidden" onclick="resetBranchStockOnly()">🔄 Reset Branch Stock</button>
-                    <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 Export Excel</button>
+        <!-- VIEW 1: LIVE STOCK DASHBOARD -->
+        <div id="dashboardView" class="app-view active-view">
+            <!-- KPI Summary Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Items</div>
+                    <div class="kpi-value kpi-total" id="kpiTotal">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Low Stock Alert</div>
+                    <div class="kpi-value kpi-low" id="kpiLow">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Dispatched Today</div>
+                    <div class="kpi-value kpi-dispatch" id="kpiDispatched">0</div>
                 </div>
             </div>
-            <input type="text" id="searchStockInput" onkeyup="filterTable('searchStockInput', 'liveStockTableBody')" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
-            <div class="table-wrapper">
-                <table id="stockTable">
-                    <thead>
-                        <tr id="stockTableHeaderRow">
-                            <th>Item Name</th>
-                            <th class="col-wh">Warehouse</th>
-                            <th class="col-wh">Dispatched Today</th>
-                            <th class="col-b1">Branch 1</th>
-                            <th class="col-b2">Branch 2</th>
-                            <th class="col-total">Net Total</th>
-                            <th>Status</th>
-                            <th class="owner-only hidden">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="liveStockTableBody"></tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- TRANSFERS LOG & CONFIRMATION -->
-        <div class="card">
-            <div class="card-header">
-                <h3>⏳ Stock Dispatch & Movement History</h3>
-                <div>
-                    <button class="btn btn-whatsapp btn-sm" onclick="shareTransfersWhatsApp()">📲 Share Movement WhatsApp</button>
-                    <input type="date" id="filterLogDate" onchange="renderTransfersTable()" style="width: auto; padding: 4px; font-size: 12px; display:inline-block;">
+            <div class="panel-card">
+                <div class="panel-title">
+                    <i class="fas fa-boxes"></i> Live Stock Tracker
+                </div>
+
+                <!-- WhatsApp Quick Button -->
+                <div class="btn-group" style="margin-bottom: 12px;">
+                    <button class="btn btn-green" onclick="openWhatsAppModal('summary')"><i class="fab fa-whatsapp"></i> Share Summary WhatsApp</button>
+                    <button class="btn btn-blue" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-container">
+                    <button class="filter-btn active" onclick="setFilter('ALL', this)">All Items</button>
+                    <button class="filter-btn" onclick="setFilter('LOW', this)">⚠️ Low Stock Only</button>
+                    <button class="filter-btn" onclick="setFilter('INGREDIENT', this)">Ingredients</button>
+                    <button class="filter-btn" onclick="setFilter('PACKAGING', this)">Packaging</button>
+                </div>
+
+                <!-- Search -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search item name..." onkeyup="renderStockTable()">
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Warehouse</th>
+                                <th>Dispatched Today</th>
+                                <th>Branch 1</th>
+                                <th>Branch 2</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody">
+                            <!-- Stock items dynamically populated -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date / Time</th>
-                            <th>Item</th>
-                            <th>Qty Dispatched</th>
-                            <th>Target Branch</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pendingTransfersTableBody"></tbody>
-                </table>
+        </div>
+
+        <!-- VIEW 2: DISPATCH & STOCK LEDGER -->
+        <div id="ledgerView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title">
+                    <i class="fas fa-scroll"></i> Stock Movement & Dispatch Ledger
+                </div>
+
+                <div class="btn-group" style="margin-bottom: 12px;">
+                    <button class="btn btn-green" onclick="openWhatsAppModal('ledger')"><i class="fab fa-whatsapp"></i> Share Ledger WhatsApp</button>
+                    <button class="btn btn-red" onclick="confirmClearHistory()"><i class="fas fa-eraser"></i> Clear Ledger History</button>
+                </div>
+
+                <!-- Search & Filters for Ledger -->
+                <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="ledgerSearch" class="form-control" style="flex: 1;" placeholder="Search item or branch..." onkeyup="renderLedgerTable()">
+                    <select id="branchFilter" class="form-control" style="width: auto;" onchange="renderLedgerTable()">
+                        <option value="ALL">All Branches</option>
+                        <option value="BRANCH 1">Branch 1</option>
+                        <option value="BRANCH 2">Branch 2</option>
+                    </select>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date / Time</th>
+                                <th>Item Name</th>
+                                <th>Qty</th>
+                                <th>Target Branch</th>
+                                <th>Action Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerTableBody">
+                            <!-- History populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- TAB 2: BULK DISPATCH SHEET (WAREHOUSE / OWNER ONLY) -->
-    <div id="transferTab" class="hidden">
-        <div class="card">
-            <div class="card-header">
-                <h3>🚀 Quick Bulk Dispatch Sheet</h3>
-                <select id="bulkTransferDestSelect" style="width: 150px; font-size: 12px; padding: 4px;">
-                    <option value="branch_1">To Branch 1</option>
-                    <option value="branch_2">To Branch 2</option>
-                </select>
+        <!-- VIEW 3: CONSUMPTION & WASTAGE -->
+        <div id="wasteView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title">
+                    <i class="fas fa-trash-alt"></i> Deduct Usage / Wastage
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Item</label>
+                    <select id="wasteItem" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label>Deduct Location / Branch</label>
+                    <select id="wasteLocation" class="form-control">
+                        <option value="BRANCH_1">Branch 1</option>
+                        <option value="BRANCH_2">Branch 2</option>
+                        <option value="MAIN_STORE">Warehouse (Main Store)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity Used / Damaged</label>
+                    <input type="number" id="wasteQty" class="form-control" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <select id="wasteReason" class="form-control">
+                        <option value="Kitchen Usage">Kitchen Usage / Order Cooking</option>
+                        <option value="Spoiled/Expired">Spoiled / Expired Item</option>
+                        <option value="Damaged Packaging">Damaged Packaging / Spillage</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-orange" onclick="processDeduction()"><i class="fas fa-minus-circle"></i> Confirm Deduction</button>
             </div>
-            <p style="font-size: 12px; color: #aaa; margin-top:0;">Jis item ko dispatch karna ho, uski quantity likhein:</p>
-            <input type="text" id="searchDispatchInput" onkeyup="filterTable('searchDispatchInput', 'bulkTransferTableBody')" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
-            
-            <div class="table-wrapper">
-                <table id="bulkTransferTable">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Warehouse Stock</th>
-                            <th>Dispatch Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bulkTransferTableBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-warning" onclick="sendBulkTransfer()" style="margin-top: 15px;">🚀 Dispatch Selected Items</button>
         </div>
-    </div>
 
-    <!-- TAB 3: BULK INWARD SHEET (WAREHOUSE / OWNER ONLY) -->
-    <div id="inwardTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>📥 Bulk Stock Inward Sheet (Supplier Entry)</h3></div>
-            <label>Vendor / Supplier Name (Optional)</label>
-            <input type="text" id="bulkInwardVendorInput" placeholder="e.g., Akbari Market Vendor" style="margin-bottom:12px;">
-            <input type="text" id="searchInwardInput" onkeyup="filterTable('searchInwardInput', 'bulkInwardTableBody')" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
-            
-            <div class="table-wrapper">
-                <table id="bulkInwardTable">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Current Warehouse Stock</th>
-                            <th>Quantity Received</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bulkInwardTableBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-success" onclick="processBulkInward()" style="margin-top: 15px;">+ Save Stock Inward</button>
-        </div>
-    </div>
-
-    <!-- TAB 4: DAILY FRESH ITEMS ENTRY (ALL USERS) -->
-    <div id="dailyFreshTab" class="hidden">
-        <div class="card">
-            <div class="card-header">
-                <h3>🥩 Daily Fresh Items Entry Sheet</h3>
-                <select id="dailyFreshLocationSelect" style="width: 150px; font-size: 12px; padding: 4px;" class="owner-only hidden">
-                    <option value="main_store">Main Store</option>
-                    <option value="branch_1">Branch 1</option>
-                    <option value="branch_2">Branch 2</option>
-                </select>
-            </div>
-            <p style="font-size: 12px; color: #aaa; margin-top:0;">Chicken, Veggies, Cheese waali fresh items ki entry karein:</p>
-            <input type="text" id="searchFreshInput" onkeyup="filterTable('searchFreshInput', 'dailyFreshTableBody')" placeholder="🔍 Search Fresh Item..." style="margin-bottom: 10px;">
-            
-            <div class="table-wrapper">
-                <table id="dailyFreshTable">
-                    <thead>
-                        <tr>
-                            <th>Fresh Item Name</th>
-                            <th>Current Stock</th>
-                            <th>Today Received / Added</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dailyFreshTableBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-primary" onclick="processDailyFreshEntry()" style="margin-top: 15px;">🥩 Save Fresh Stock</button>
-        </div>
-    </div>
-
-    <!-- TAB 5: BRANCH DEMAND REQUEST SHEET -->
-    <div id="demandRequestTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>📑 Send Demand Request To Warehouse</h3></div>
-            <p style="font-size: 12px; color: #aaa; margin-top:0;">Jo saman warehouse se chahiye uski quantity likh kar bhej dein:</p>
-            <input type="text" id="searchDemandReqInput" onkeyup="filterTable('searchDemandReqInput', 'demandReqTableBody')" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
-            
-            <div class="table-wrapper">
-                <table id="demandReqTable">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>My Current Stock</th>
-                            <th>Required Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody id="demandReqTableBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-whatsapp" onclick="sendBranchDemandRequest()" style="margin-top: 15px;">📲 Submit Demand Request</button>
-        </div>
-    </div>
-
-    <!-- TAB 6: WASTE & CONSUMPTION TRACKER SHEET -->
-    <div id="wasteTab" class="hidden">
-        <div class="card">
-            <div class="card-header">
-                <h3>🗑️ Daily Kitchen Usage / Waste Tracker Sheet</h3>
-                <select id="wasteLocationSelect" style="width: 150px; font-size: 12px; padding: 4px;" class="owner-only hidden">
-                    <option value="main_store">Main Store</option>
-                    <option value="branch_1">Branch 1</option>
-                    <option value="branch_2">Branch 2</option>
-                </select>
-            </div>
-            <input type="text" id="searchWasteInput" onkeyup="filterTable('searchWasteInput', 'wasteTableBody')" placeholder="🔍 Search Item..." style="margin-bottom: 10px;">
-            
-            <div class="table-wrapper">
-                <table id="wasteTable">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Current Stock</th>
-                            <th>Quantity Used / Wasted</th>
-                        </tr>
-                    </thead>
-                    <tbody id="wasteTableBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-danger" onclick="processBulkWaste()" style="margin-top: 15px;">🗑️ Deduct Kitchen Usage / Waste</button>
-        </div>
-    </div>
-
-    <!-- TAB 7: ITEM MANAGEMENT -->
-    <div id="manageItemsTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>➕ Add New Item To Catalogue</h3></div>
-            <label>Item Name</label>
-            <input type="text" id="newItemNameInput" placeholder="e.g., Shopper 12/15, Chicken Tikka">
-            
-            <label>Item Category</label>
-            <select id="newItemTypeSelect">
-                <option value="regular">Regular Item (Packaging, Sauces, Dry Spices)</option>
-                <option value="daily_fresh">Daily Fresh Perishable (Chicken, Cheese, Veggies)</option>
-            </select>
-
-            <label>Minimum Low Stock Alert Limit</label>
-            <input type="number" id="newItemMinLimitInput" placeholder="10">
-            
-            <button class="btn btn-success" onclick="addNewCatalogueItem()">+ Create Item</button>
-        </div>
-    </div>
-
-    <!-- TAB 8: SECURITY -->
-    <div id="userMgmtTab" class="hidden">
-        <div class="card">
-            <div class="card-header"><h3>🔑 Change Owner Security PIN</h3></div>
-            <label>Enter New Owner PIN</label>
-            <input type="password" id="newOwnerPinInput" placeholder="e.g., 8888">
-            <button class="btn btn-danger" onclick="updateOwnerPin()">Update Admin PIN</button>
-        </div>
-    </div>
-
-    <!-- AUDIT LOGS -->
-    <div class="card">
-        <div class="card-header"><h3>📜 System Activity Audit Log</h3></div>
-        <div id="systemAuditLogs" class="log-box"></div>
-    </div>
-
-</div>
-
-<script>
-    const firebaseConfig = { databaseURL: "https://ibn-e-rahat-inventory-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let activeRole = '';
-    let ownerPinCode = '8888';
-    let inventoryData = {};
-    let transferLogs = {};
-
-    function toggleDrawer() {
-        document.getElementById('sideDrawer').classList.toggle('active');
-        document.getElementById('drawerOverlay').classList.toggle('active');
-    }
-
-    function switchTab(tabId) {
-        ['dashboardTab', 'transferTab', 'inwardTab', 'dailyFreshTab', 'demandRequestTab', 'wasteTab', 'manageItemsTab', 'userMgmtTab'].forEach(t => {
-            let el = document.getElementById(t);
-            if(el) el.classList.add('hidden');
-        });
-        document.getElementById(tabId).classList.remove('hidden');
-        toggleDrawer();
-    }
-
-    function loginSystem() {
-        let role = document.getElementById('loginRoleSelect').value;
-        let pin = document.getElementById('loginPinInput').value;
-
-        if (role === 'owner' && pin !== ownerPinCode) {
-            return alert("Ghalat Admin PIN Code!");
-        } else if (role !== 'owner' && pin !== '1234') {
-            return alert("Ghalat Staff PIN Code!");
-        }
-
-        activeRole = role;
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById('headerRoleBadge').innerText = role.toUpperCase().replace('_', ' ');
-        document.getElementById('drawerUserRole').innerText = role.toUpperCase();
-
-        if (role === 'owner') {
-            document.querySelectorAll('.owner-only').forEach(e => e.classList.remove('hidden'));
-            document.querySelectorAll('.dispatch-only').forEach(e => e.classList.remove('hidden'));
-        } else if (role === 'main_store') {
-            document.querySelectorAll('.dispatch-only').forEach(e => e.classList.remove('hidden'));
-        } else if (role.startsWith('branch_')) {
-            document.querySelectorAll('.branch-only').forEach(e => e.classList.remove('hidden'));
-        }
-
-        applyRolePrivacyStyles();
-        initRealtimeSync();
-    }
-
-    function logout() { location.reload(); }
-
-    function logAction(msg) {
-        db.ref('logs').push({ time: new Date().toLocaleString(), msg: msg });
-    }
-
-    function applyRolePrivacyStyles() {
-        if (activeRole === 'branch_1') {
-            document.querySelectorAll('.col-wh, .col-b2, .col-total').forEach(e => e.classList.add('hidden'));
-        } else if (activeRole === 'branch_2') {
-            document.querySelectorAll('.col-wh, .col-b1, .col-total').forEach(e => e.classList.add('hidden'));
-        } else {
-            document.querySelectorAll('.col-wh, .col-b1, .col-b2, .col-total').forEach(e => e.classList.remove('hidden'));
-        }
-    }
-
-    function initRealtimeSync() {
-        db.ref('enterprise_inventory').on('value', (snapshot) => {
-            inventoryData = snapshot.val() || {};
-            renderStockTable();
-            renderBulkTransferTable();
-            renderBulkInwardTable();
-            renderDailyFreshTable();
-            renderDemandReqTable();
-            renderWasteTable();
-        });
-
-        db.ref('transfers').on('value', (snapshot) => {
-            transferLogs = snapshot.val() || {};
-            renderStockTable();
-            renderTransfersTable();
-        });
-
-        db.ref('logs').limitToLast(12).on('value', (snapshot) => {
-            let logs = snapshot.val() || {};
-            let container = document.getElementById('systemAuditLogs');
-            container.innerHTML = '';
-            Object.keys(logs).reverse().forEach(k => {
-                container.innerHTML += `<div class="log-item">⏱️ <b>${logs[k].time}</b> - ${logs[k].msg}</div>`;
-            });
-        });
-
-        db.ref('settings/owner_pin').on('value', (snapshot) => {
-            if (snapshot.exists()) ownerPinCode = snapshot.val();
-        });
-    }
-
-    function getTodayDispatchedQty(itemKey) {
-        let todayStr = new Date().toISOString().split('T')[0];
-        let total = 0;
-        Object.keys(transferLogs).forEach(k => {
-            let tr = transferLogs[k];
-            if (tr.item_key === itemKey && tr.date === todayStr) {
-                total += parseFloat(tr.qty) || 0;
-            }
-        });
-        return total;
-    }
-
-    function renderStockTable() {
-        let tbody = document.getElementById('liveStockTableBody');
-        tbody.innerHTML = '';
-        let keys = Object.keys(inventoryData);
-
-        if (keys.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8">No items found.</td></tr>';
-            return;
-        }
-
-        keys.forEach(key => {
-            let item = inventoryData[key];
-            let mainStock = item.main_store || 0;
-            let b1Stock = item.branch_1 || 0;
-            let b2Stock = item.branch_2 || 0;
-            let minLimit = item.min_limit || 5;
-            let dispatchedToday = getTodayDispatchedQty(key);
-
-            let myStock = 0;
-            if (activeRole === 'branch_1') myStock = b1Stock;
-            else if (activeRole === 'branch_2') myStock = b2Stock;
-            else myStock = mainStock + b1Stock + b2Stock;
-
-            let remainingTotal = mainStock + b1Stock + b2Stock;
-            let statusBadge = myStock <= minLimit ? '<span class="badge badge-low">REORDER NOW</span>' : '<span class="badge badge-confirmed">OK</span>';
-            if (item.type === 'daily_fresh') statusBadge += ' <span class="badge badge-fresh">FRESH</span>';
-
-            let actionCol = activeRole === 'owner' ? `<td><button class="btn btn-danger btn-sm" onclick="deleteItem('${key}')">X</button></td>` : '';
-
-            tbody.innerHTML += `
-                <tr>
-                    <td><b>${item.name}</b></td>
-                    <td class="col-wh">${mainStock}</td>
-                    <td class="col-wh" style="color:#f59f00; font-weight:bold;">${dispatchedToday}</td>
-                    <td class="col-b1">${b1Stock}</td>
-                    <td class="col-b2">${b2Stock}</td>
-                    <td class="col-total" style="color:#2b8a3e; font-weight:bold;">${remainingTotal}</td>
-                    <td>${statusBadge}</td>
-                    ${actionCol}
-                </tr>
-            `;
-        });
-        applyRolePrivacyStyles();
-    }
-
-    function renderBulkTransferTable() {
-        let tbody = document.getElementById('bulkTransferTableBody');
-        tbody.innerHTML = '';
-        Object.keys(inventoryData).forEach(key => {
-            let item = inventoryData[key];
-            tbody.innerHTML += `
-                <tr>
-                    <td style="text-align:left;"><b>${item.name}</b></td>
-                    <td>${item.main_store || 0}</td>
-                    <td><input type="number" class="qty-input bulk-dispatch-qty" data-key="${key}" placeholder="0" min="0"></td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderBulkInwardTable() {
-        let tbody = document.getElementById('bulkInwardTableBody');
-        tbody.innerHTML = '';
-        Object.keys(inventoryData).forEach(key => {
-            let item = inventoryData[key];
-            tbody.innerHTML += `
-                <tr>
-                    <td style="text-align:left;"><b>${item.name}</b></td>
-                    <td>${item.main_store || 0}</td>
-                    <td><input type="number" class="qty-input bulk-inward-qty" data-key="${key}" placeholder="0" min="0"></td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderDailyFreshTable() {
-        let tbody = document.getElementById('dailyFreshTableBody');
-        tbody.innerHTML = '';
-        let targetLoc = activeRole.startsWith('branch_') ? activeRole : document.getElementById('dailyFreshLocationSelect').value;
-
-        Object.keys(inventoryData).forEach(key => {
-            let item = inventoryData[key];
-            if (item.type === 'daily_fresh') {
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="text-align:left;"><b>${item.name}</b> <span class="badge badge-fresh">FRESH</span></td>
-                        <td>${item[targetLoc] || 0}</td>
-                        <td><input type="number" class="qty-input daily-fresh-qty" data-key="${key}" placeholder="0" min="0"></td>
-                    </tr>
-                `;
-            }
-        });
-    }
-
-    function renderDemandReqTable() {
-        let tbody = document.getElementById('demandReqTableBody');
-        tbody.innerHTML = '';
-        let branchKey = activeRole;
-
-        Object.keys(inventoryData).forEach(key => {
-            let item = inventoryData[key];
-            tbody.innerHTML += `
-                <tr>
-                    <td style="text-align:left;"><b>${item.name}</b></td>
-                    <td>${item[branchKey] || 0}</td>
-                    <td><input type="number" class="qty-input demand-req-qty" data-key="${key}" placeholder="0" min="0"></td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderWasteTable() {
-        let tbody = document.getElementById('wasteTableBody');
-        tbody.innerHTML = '';
-        let targetLoc = activeRole.startsWith('branch_') ? activeRole : document.getElementById('wasteLocationSelect').value;
-
-        Object.keys(inventoryData).forEach(key => {
-            let item = inventoryData[key];
-            tbody.innerHTML += `
-                <tr>
-                    <td style="text-align:left;"><b>${item.name}</b></td>
-                    <td>${item[targetLoc] || 0}</td>
-                    <td><input type="number" class="qty-input waste-qty" data-key="${key}" placeholder="0" min="0"></td>
-                </tr>
-            `;
-        });
-    }
-
-    function sendBulkTransfer() {
-        if (activeRole !== 'owner' && activeRole !== 'main_store') return alert("Access Denied!");
-        let dest = document.getElementById('bulkTransferDestSelect').value;
-        let inputs = document.querySelectorAll('.bulk-dispatch-qty');
-        let count = 0;
-
-        inputs.forEach(input => {
-            let qty = parseFloat(input.value) || 0;
-            let key = input.getAttribute('data-key');
-
-            if (qty > 0 && key) {
-                let mainStock = inventoryData[key].main_store || 0;
-                db.ref(`enterprise_inventory/${key}/main_store`).set(Math.max(0, mainStock - qty));
-
-                let now = new Date();
-                db.ref('transfers').push({
-                    item_key: key,
-                    item_name: inventoryData[key].name,
-                    qty: qty,
-                    destination: dest,
-                    status: 'PENDING',
-                    date: now.toISOString().split('T')[0],
-                    timestamp: now.toLocaleString()
-                });
-                input.value = '';
-                count++;
-            }
-        });
-
-        if (count > 0) {
-            alert(`✅ ${count} Items Dispatched!`);
-            logAction(`Bulk dispatch (${count} items) sent to ${dest.toUpperCase()}`);
-        } else alert("Quantity enter nahi ki!");
-    }
-
-    function processBulkInward() {
-        let inputs = document.querySelectorAll('.bulk-inward-qty');
-        let vendor = document.getElementById('bulkInwardVendorInput').value.trim() || 'Supplier';
-        let count = 0;
-
-        inputs.forEach(input => {
-            let qty = parseFloat(input.value) || 0;
-            let key = input.getAttribute('data-key');
-
-            if (qty > 0 && key) {
-                let currentStock = inventoryData[key].main_store || 0;
-                db.ref(`enterprise_inventory/${key}/main_store`).set(currentStock + qty);
-                input.value = '';
-                count++;
-            }
-        });
-
-        if (count > 0) {
-            alert(`✅ ${count} Items Stock Inward Successfully Saved!`);
-            logAction(`Bulk Stock Inward Added (${count} items) from ${vendor}`);
-            document.getElementById('bulkInwardVendorInput').value = '';
-        } else alert("Quantity enter nahi ki!");
-    }
-
-    function processDailyFreshEntry() {
-        let inputs = document.querySelectorAll('.daily-fresh-qty');
-        let loc = activeRole.startsWith('branch_') ? activeRole : document.getElementById('dailyFreshLocationSelect').value;
-        let count = 0;
-
-        inputs.forEach(input => {
-            let qty = parseFloat(input.value) || 0;
-            let key = input.getAttribute('data-key');
-
-            if (qty > 0 && key) {
-                let currentStock = inventoryData[key][loc] || 0;
-                db.ref(`enterprise_inventory/${key}/${loc}`).set(currentStock + qty);
-                input.value = '';
-                count++;
-            }
-        });
-
-        if (count > 0) {
-            alert(`🥩 Daily Fresh Stock Updated for ${loc.toUpperCase()}!`);
-            logAction(`Fresh Stock Added (${count} items) to ${loc.toUpperCase()}`);
-        } else alert("Quantity enter nahi ki!");
-    }
-
-    function sendBranchDemandRequest() {
-        let inputs = document.querySelectorAll('.demand-req-qty');
-        let text = `*📑 DEMAND REQUEST FROM ${activeRole.toUpperCase()}*\n\n`;
-        let count = 0;
-
-        inputs.forEach(input => {
-            let qty = parseFloat(input.value) || 0;
-            let key = input.getAttribute('data-key');
-
-            if (qty > 0 && key) {
-                text += `• *${inventoryData[key].name}*: Required Qty: ${qty}\n`;
-                input.value = '';
-                count++;
-            }
-        });
-
-        if (count > 0) {
-            let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-            logAction(`Demand request generated by ${activeRole.toUpperCase()} (${count} items)`);
-        } else alert("Koi quantity enter nahi ki!");
-    }
-
-    function processBulkWaste() {
-        let inputs = document.querySelectorAll('.waste-qty');
-        let loc = activeRole.startsWith('branch_') ? activeRole : document.getElementById('wasteLocationSelect').value;
-        let count = 0;
-
-        inputs.forEach(input => {
-            let qty = parseFloat(input.value) || 0;
-            let key = input.getAttribute('data-key');
-
-            if (qty > 0 && key) {
-                let currentStock = inventoryData[key][loc] || 0;
-                db.ref(`enterprise_inventory/${key}/${loc}`).set(Math.max(0, currentStock - qty));
-                input.value = '';
-                count++;
-            }
-        });
-
-        if (count > 0) {
-            alert(`⚠️ Kitchen Usage / Waste Deducted for ${loc.toUpperCase()}!`);
-            logAction(`Waste / Usage Deducted (${count} items) from ${loc.toUpperCase()}`);
-        } else alert("Quantity enter nahi ki!");
-    }
-
-    function renderTransfersTable() {
-        let tbody = document.getElementById('pendingTransfersTableBody');
-        tbody.innerHTML = '';
-        let keys = Object.keys(transferLogs);
-        let selectedDate = document.getElementById('filterLogDate').value;
-
-        if(keys.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">No transfer history.</td></tr>';
-            return;
-        }
-
-        keys.reverse().forEach(key => {
-            let tr = transferLogs[key];
-            if (activeRole.startsWith('branch_') && tr.destination !== activeRole) return;
-            if (selectedDate && tr.date && tr.date !== selectedDate) return;
-
-            let isPending = tr.status === 'PENDING';
-            let statusBadge = isPending ? '<span class="badge badge-pending">PENDING</span>' : `<span class="badge badge-confirmed">RECEIVED (${tr.received_qty || tr.qty})</span>`;
-            let canConfirm = isPending && (activeRole === 'owner' || activeRole === tr.destination);
-            
-            let actionBtn = '-';
-            if (canConfirm) {
-                actionBtn = `
-                    <div style="display:flex; gap:4px; justify-content:center;">
-                        <button class="btn btn-success btn-sm" onclick="confirmTransfer('${key}', ${tr.qty})">Confirm (${tr.qty})</button>
-                        <button class="btn btn-warning btn-sm" onclick="customReceive('${key}', ${tr.qty})">Edit Qty</button>
-                    </div>
-                `;
-            }
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>${tr.timestamp}</td>
-                    <td>${tr.item_name}</td>
-                    <td><b>${tr.qty}</b></td>
-                    <td>${tr.destination.toUpperCase().replace('_', ' ')}</td>
-                    <td>${statusBadge}</td>
-                    <td>${actionBtn}</td>
-                </tr>
-            `;
-        });
-    }
-
-    function confirmTransfer(key, exactQty) {
-        let tr = transferLogs[key];
-        if (!tr) return;
-        let currBranchStock = (inventoryData[tr.item_key] && inventoryData[tr.item_key][tr.destination]) || 0;
-        
-        db.ref(`enterprise_inventory/${tr.item_key}/${tr.destination}`).set(currBranchStock + exactQty);
-        db.ref(`transfers/${key}`).update({
-            status: 'CONFIRMED',
-            received_qty: exactQty
-        });
-        logAction(`${tr.destination.toUpperCase()} received ${exactQty} of ${tr.item_name}`);
-    }
-
-    function customReceive(key, originalQty) {
-        let userInput = prompt(`Dispatched Quantity: ${originalQty}\nAap ko kitna physical stock mila?`, originalQty);
-        if (userInput === null) return;
-        
-        let actualReceived = parseFloat(userInput);
-        if (isNaN(actualReceived) || actualReceived < 0) return alert("Sahi quantity enter karein!");
-
-        let tr = transferLogs[key];
-        if (!tr) return;
-
-        let shortage = originalQty - actualReceived;
-        if (shortage > 0) {
-            let currMainStock = (inventoryData[tr.item_key] && inventoryData[tr.item_key].main_store) || 0;
-            db.ref(`enterprise_inventory/${tr.item_key}/main_store`).set(currMainStock + shortage);
-            logAction(`Shortage Adjustment: ${shortage} of ${tr.item_name} returned to Warehouse.`);
-        }
-
-        confirmTransfer(key, actualReceived);
-    }
-
-    function shareStockWhatsApp() {
-        let today = new Date().toLocaleDateString();
-        let text = `*📦 IBN E RAHAT - LIVE STOCK REPORT (${today})*\n\n`;
-        Object.keys(inventoryData).forEach(k => {
-            let i = inventoryData[k];
-            if (activeRole === 'branch_1') text += `• *${i.name}*: B1 Stock: ${i.branch_1||0}\n`;
-            else if (activeRole === 'branch_2') text += `• *${i.name}*: B2 Stock: ${i.branch_2||0}\n`;
-            else text += `• *${i.name}*: WH: ${i.main_store||0} | B1: ${i.branch_1||0} | B2: ${i.branch_2||0}\n`;
-        });
-        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-    }
-
-    function shareTransfersWhatsApp() {
-        let today = new Date().toLocaleDateString();
-        let text = `*🚚 IBN E RAHAT - DISPATCH REPORT (${today})*\n\n`;
-        let count = 0;
-        Object.keys(transferLogs).forEach(k => {
-            let tr = transferLogs[k];
-            if (activeRole.startsWith('branch_') && tr.destination !== activeRole) return;
-            text += `${count + 1}. *${tr.item_name}* -> Qty: ${tr.qty} (${tr.destination.toUpperCase()}) | Status: ${tr.status}\n`;
-            count++;
-        });
-        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-    }
-
-    function filterTable(inputId, tbodyId) {
-        let input = document.getElementById(inputId).value.toLowerCase();
-        let rows = document.querySelectorAll(`#${tbodyId} tr`);
-        rows.forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none"; });
-    }
-
-    function addNewCatalogueItem() {
-        let nameInput = document.getElementById('newItemNameInput');
-        let typeSelect = document.getElementById('newItemTypeSelect');
-        let minInput = document.getElementById('newItemMinLimitInput');
-        
-        let name = nameInput.value.trim();
-        let type = typeSelect.value;
-        let min = parseFloat(minInput.value) || 5;
-
-        if (!name) return alert("Item name likhein!");
-        let key = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
-
-        db.ref('enterprise_inventory/' + key).set({
-            name: name, type: type, main_store: 0, branch_1: 0, branch_2: 0, min_limit: min
-        }).then(() => {
-            nameInput.value = ''; minInput.value = '';
-            alert("✅ " + name + " Created Successfully!");
-        });
-    }
-
-    function deleteItem(key) {
-        if (confirm("Delete this item?")) db.ref('enterprise_inventory/' + key).remove();
-    }
-
-    function resetBranchStockOnly() {
-        if (!confirm("Reset Branch 1 & 2 Stock to ZERO?")) return;
-        let updates = {};
-        Object.keys(inventoryData).forEach(key => {
-            updates[`enterprise_inventory/${key}/branch_1`] = 0;
-            updates[`enterprise_inventory/${key}/branch_2`] = 0;
-        });
-        db.ref().update(updates);
-    }
-
-    function updateOwnerPin() {
-        let pin = document.getElementById('newOwnerPinInput').value;
-        if (pin.length < 4) return alert("Min 4 digits!");
-        db.ref('settings/owner_pin').set(pin);
-    }
-
-    function exportCSV() {
-        let csv = 'Item Name,Type,Main Warehouse,Branch 1,Branch 2\n';
-        Object.keys(inventoryData).forEach(k => {
-            let i = inventoryData[k];
-            csv += `"${i.name}",${i.type||'regular'},${i.main_store||0},${i.branch_1||0},${i.branch_2||0}\n`;
-        });
-        let blob = new Blob([csv], { type: 'text/csv' });
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `inventory_report.csv`;
-        a.click();
-    }
-</script>
-</body>
-</html>
+        <!-- VIEW 4: SETTINGS & WHATSAPP CONFIG -->
+        <div id="settingsView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title">
+                    <i class="fas fa-cog"></i> System & WhatsApp Settings
+                </div>
+
+                <div class="form-group">
+                    <label>Default WhatsApp Phone Number (With Country Code e.g., 923001234567)</label>
+                    <input type="text" id="whatsappNumberInput" class="form-control" placeholder="Leave empty for direct app sharing picker">
+                    <small style="color: var(--text-muted); font-size: 10px; display: block; margin-top: 4px;">
+                        * Leave empty if you want WhatsApp to open contact picker every time.
+                    </small>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-blue" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+                    <button class=
