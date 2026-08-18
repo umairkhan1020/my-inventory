@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ibn E Rahat Enterprise - PIN Protected Inventory System</title>
+    <title>Ibn E Rahat Enterprise - Smart Inventory & Demand System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -20,411 +20,96 @@
             --table-hover: #262626;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding-bottom: 30px; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            padding-bottom: 30px;
-        }
-
-        /* Top Header */
         header {
             background-color: #1a1a1a;
             border-bottom: 1px solid var(--card-border);
             padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .menu-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .app-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--accent-blue);
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .menu-btn { background: none; border: none; color: var(--text-main); font-size: 20px; cursor: pointer; padding: 5px; }
+        .app-title { font-size: 16px; font-weight: 700; color: var(--accent-blue); }
 
         .role-badge-btn {
-            background-color: #252525;
-            color: var(--accent-green);
-            border: 1px solid var(--card-border);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background-color: #252525; color: var(--accent-green);
+            border: 1px solid var(--card-border); padding: 6px 12px;
+            border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
         }
 
-        /* Sidebar Navigation */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background-color: #181818;
-            border-right: 1px solid var(--card-border);
-            z-index: 200;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background-color: #181818; border-right: 1px solid var(--card-border);
+            z-index: 200; transition: left 0.3s ease; display: flex; flex-direction: column;
         }
 
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-header {
-            padding: 18px;
-            border-bottom: 1px solid var(--card-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .role-box-sidebar {
-            padding: 12px 20px;
-            background: #222;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 10px 0;
-        }
-
+        .sidebar.active { left: 0; }
+        .sidebar-header { padding: 18px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+        .role-box-sidebar { padding: 12px 20px; background: #222; border-bottom: 1px solid var(--card-border); }
+        .sidebar-menu { list-style: none; padding: 10px 0; }
         .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            color: var(--text-main);
-            text-decoration: none;
-            font-size: 14px;
-            transition: background 0.2s;
+            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+            color: var(--text-main); text-decoration: none; font-size: 14px; transition: background 0.2s;
         }
-
         .sidebar-menu li a:hover, .sidebar-menu li a.active {
-            background-color: #252525;
-            border-left: 4px solid var(--accent-blue);
-            color: var(--accent-blue);
+            background-color: #252525; border-left: 4px solid var(--accent-blue); color: var(--accent-blue);
         }
 
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 150;
-            display: none;
-        }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: none; }
+        .sidebar-overlay.active { display: block; }
 
-        .sidebar-overlay.active {
-            display: block;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
+        .app-view { display: none; }
+        .app-view.active-view { display: block; }
 
-        /* Main Container */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 15px;
-        }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .kpi-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; text-align: center; }
+        .kpi-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .kpi-value { font-size: 18px; font-weight: bold; }
 
-        /* View Switching */
-        .app-view {
-            display: none;
-        }
+        .panel-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .panel-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--accent-blue); }
 
-        .app-view.active-view {
-            display: block;
-        }
+        .table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--card-border); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        th { background-color: var(--table-header); color: var(--accent-blue); padding: 10px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid var(--card-border); background-color: var(--card-bg); vertical-align: middle; }
 
-        /* KPI Cards Grid */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+        .form-control { width: 100%; background-color: #121212; border: 1px solid var(--card-border); border-radius: 6px; padding: 8px 10px; color: var(--text-main); font-size: 13px; }
 
-        .kpi-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
+        .qty-input { width: 80px; padding: 5px; background: #121212; border: 1px solid var(--accent-blue); color: #fff; border-radius: 4px; font-weight: bold; text-align: center; }
 
-        .kpi-title {
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .kpi-value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .kpi-total { color: var(--accent-blue); }
-        .kpi-low { color: var(--accent-red); }
-        .kpi-dispatch { color: var(--accent-orange); }
-
-        /* Action Panel & Cards */
-        .panel-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .panel-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--accent-blue);
-        }
-
-        /* Filter Badges */
-        .filter-container {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-
-        .filter-btn {
-            background-color: #2a2a2a;
-            border: 1px solid var(--card-border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .filter-btn.active {
-            background-color: var(--accent-blue);
-            color: #fff;
-            border-color: var(--accent-blue);
-        }
-
-        /* Search Bar */
-        .search-box {
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .search-box input {
-            width: 100%;
-            background-color: #121212;
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            padding: 10px 10px 10px 35px;
-            color: var(--text-main);
-            font-size: 13px;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        /* Tables */
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 6px;
-            border: 1px solid var(--card-border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: var(--table-header);
-            color: var(--accent-blue);
-            padding: 10px;
-            font-weight: 600;
-            border-bottom: 1px solid var(--card-border);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid var(--card-border);
-            background-color: var(--card-bg);
-            vertical-align: middle;
-        }
-
-        tr:hover td {
-            background-color: var(--table-hover);
-        }
-
-        .status-badge {
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .status-ok { background-color: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
-        .status-reorder { background-color: rgba(231, 76, 60, 0.2); color: var(--accent-red); }
-
-        .cat-badge {
-            font-size: 9px;
-            background: #2a2a2a;
-            color: #888;
-            padding: 2px 5px;
-            border-radius: 3px;
-            margin-left: 4px;
-        }
-
-        /* Form Controls */
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .form-control {
-            width: 100%;
-            background-color: #121212;
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            padding: 8px 10px;
-            color: var(--text-main);
-            font-size: 13px;
-        }
-
-        /* Buttons */
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: none;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 8px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
         .btn-green { background-color: #27ae60; color: #fff; }
         .btn-blue { background-color: #2980b9; color: #fff; }
         .btn-red { background-color: #c0392b; color: #fff; }
         .btn-orange { background-color: #d35400; color: #fff; }
-        .btn-secondary { background-color: #444; color: #fff; }
 
-        /* Modal Overlay */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 300;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; padding: 15px; }
         .modal.active { display: flex; }
-
-        .modal-content {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            max-width: 380px;
-            width: 100%;
-            padding: 20px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .modal-footer {
-            margin-top: 15px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
+        .modal-content { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; max-width: 380px; width: 100%; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
     <header>
         <div class="header-left">
             <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
             <div class="app-title">Ibn E Rahat</div>
         </div>
-        
-        <!-- Role Switcher Button -->
         <button class="role-badge-btn" onclick="openLoginModal()">
             <i class="fas fa-user-lock"></i> <span id="currentRoleBadgeLabel">OWNER MODE</span>
         </button>
     </header>
 
-    <!-- Sidebar Navigation -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -433,72 +118,44 @@
         </div>
 
         <div class="role-box-sidebar">
-            <label style="font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 4px;">Active Account Role:</label>
             <button class="btn btn-blue" style="width: 100%; justify-content: center;" onclick="openLoginModal()">
-                <i class="fas fa-key"></i> Switch Account Role
+                <i class="fas fa-key"></i> Switch Role
             </button>
         </div>
 
         <ul class="sidebar-menu">
             <li><a href="#" onclick="switchView('dashboardView')" class="active" id="nav-dashboard"><i class="fas fa-chart-line"></i> Live Stock Dashboard</a></li>
-            <li><a href="#" onclick="switchView('dispatchView')" id="nav-dispatch"><i class="fas fa-truck-loading"></i> Stock Dispatch Form</a></li>
-            <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch & Stock Ledger</a></li>
-            <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Consumption & Wastage</a></li>
-            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> Security & Settings</a></li>
+            <li id="menu-store-demand"><a href="#" onclick="switchView('storeDemandView')" id="nav-storeDemand"><i class="fas fa-plus-circle"></i> Add Store Purchase Demand</a></li>
+            <li id="menu-dispatch"><a href="#" onclick="switchView('dispatchView')" id="nav-dispatch"><i class="fas fa-truck-loading"></i> Fast Grid Dispatch</a></li>
+            <li id="menu-branch-req"><a href="#" onclick="switchView('branchReqView')" id="nav-branchReq"><i class="fas fa-paper-plane"></i> Send Branch Demand Req</a></li>
+            <li id="menu-owner-report"><a href="#" onclick="switchView('ownerReportView')" id="nav-ownerReport"><i class="fas fa-analytics"></i> Owner Weekly Analytics</a></li>
+            <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch Ledger</a></li>
+            <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Usage & Wastage</a></li>
+            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> Security Settings</a></li>
         </ul>
     </div>
 
     <div class="container">
 
-        <!-- VIEW 1: LIVE STOCK DASHBOARD -->
+        <!-- LIVE STOCK DASHBOARD -->
         <div id="dashboardView" class="app-view active-view">
             <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-title">Total Items</div>
-                    <div class="kpi-value kpi-total" id="kpiTotal">0</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Low Stock Alert</div>
-                    <div class="kpi-value kpi-low" id="kpiLow">0</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Dispatched Today</div>
-                    <div class="kpi-value kpi-dispatch" id="kpiDispatched">0</div>
-                </div>
+                <div class="kpi-card"><div class="kpi-title">Total Items</div><div class="kpi-value" style="color: var(--accent-blue)" id="kpiTotal">0</div></div>
+                <div class="kpi-card"><div class="kpi-title">Dispatched Today</div><div class="kpi-value" style="color: var(--accent-orange)" id="kpiDispatched">0</div></div>
+                <div class="kpi-card"><div class="kpi-title">Pending Requests</div><div class="kpi-value" style="color: var(--accent-green)" id="kpiPendingReq">0</div></div>
             </div>
 
             <div class="panel-card">
-                <div class="panel-title">
-                    <i class="fas fa-boxes"></i> Live Stock Tracker (<span id="roleDisplayTitle">Owner View</span>)
-                </div>
-
-                <div class="btn-group" style="margin-bottom: 12px;">
-                    <button class="btn btn-green" onclick="openWhatsAppModal('summary')"><i class="fab fa-whatsapp"></i> Share WhatsApp Report</button>
-                    <button class="btn btn-blue" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                </div>
-
-                <div class="filter-container">
-                    <button class="filter-btn active" onclick="setFilter('ALL', this)">All Items</button>
-                    <button class="filter-btn" onclick="setFilter('LOW', this)">⚠️ Low Stock Only</button>
-                    <button class="filter-btn" onclick="setFilter('INGREDIENT', this)">Ingredients</button>
-                    <button class="filter-btn" onclick="setFilter('PACKAGING', this)">Packaging</button>
-                </div>
-
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Search item name..." onkeyup="renderStockTable()">
-                </div>
-
+                <div class="panel-title"><i class="fas fa-boxes"></i> Live Stock Tracker (<span id="roleDisplayTitle">Owner Mode</span>)</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
                                 <th>Item Name</th>
-                                <th id="colWarehouse">Warehouse</th>
+                                <th id="thWh">Warehouse</th>
                                 <th>Dispatched Today</th>
-                                <th id="colB1">Branch 1</th>
-                                <th id="colB2">Branch 2</th>
-                                <th>Status</th>
+                                <th id="thB1">Branch 1</th>
+                                <th id="thB2">Branch 2</th>
                             </tr>
                         </thead>
                         <tbody id="stockTableBody"></tbody>
@@ -507,65 +164,94 @@
             </div>
         </div>
 
-        <!-- VIEW 2: STOCK DISPATCH FORM -->
-        <div id="dispatchView" class="app-view">
+        <!-- STORE PURCHASE DEMAND ENTRY (GRID NO DROPDOWN) -->
+        <div id="storeDemandView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title">
-                    <i class="fas fa-truck-loading"></i> Dispatch Stock to Branch
-                </div>
-
-                <div class="form-group">
-                    <label>Select Item to Transfer</label>
-                    <select id="dispatchItem" class="form-control" onchange="updateDispatchMax()"></select>
-                </div>
-                <div class="form-group">
-                    <label>Destination Branch</label>
-                    <select id="dispatchBranch" class="form-control">
-                        <option value="BRANCH 1">Branch 1</option>
-                        <option value="BRANCH 2">Branch 2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Quantity to Send</label>
-                    <input type="number" id="dispatchQty" class="form-control" min="1" value="1">
-                    <small style="color: var(--text-muted); font-size: 10px;" id="dispatchAvailableLabel">Available in Warehouse: 0</small>
-                </div>
-
-                <button class="btn btn-green" onclick="processDispatch()"><i class="fas fa-paper-plane"></i> Confirm Dispatch & Send</button>
-            </div>
-        </div>
-
-        <!-- VIEW 3: DISPATCH & STOCK LEDGER -->
-        <div id="ledgerView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title">
-                    <i class="fas fa-scroll"></i> Stock Movement & Dispatch Ledger
-                </div>
-
-                <div class="btn-group" style="margin-bottom: 12px;">
-                    <button class="btn btn-green" onclick="openWhatsAppModal('ledger')"><i class="fab fa-whatsapp"></i> Share Ledger WhatsApp</button>
-                    <button class="btn btn-red" id="btnClearLedger" onclick="confirmClearHistory()"><i class="fas fa-eraser"></i> Clear History</button>
-                </div>
-
-                <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="ledgerSearch" class="form-control" style="flex: 1;" placeholder="Search item or branch..." onkeyup="renderLedgerTable()">
-                    <select id="branchFilter" class="form-control" style="width: auto;" onchange="renderLedgerTable()">
-                        <option value="ALL">All Branches</option>
-                        <option value="BRANCH 1">Branch 1</option>
-                        <option value="BRANCH 2">Branch 2</option>
-                    </select>
-                </div>
-
+                <div class="panel-title"><i class="fas fa-cart-plus"></i> Add Store Purchase Stock (Grid Entry)</div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Type new purchased quantity next to items and click Save. It auto-adds into existing Warehouse stock.</p>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Date / Time</th>
                                 <th>Item Name</th>
-                                <th>Qty</th>
-                                <th>Branch</th>
-                                <th>Action Type</th>
+                                <th>Current Store Stock</th>
+                                <th>New Purchased Qty</th>
                             </tr>
+                        </thead>
+                        <tbody id="storeDemandTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-green" style="margin-top: 12px;" onclick="saveStoreDemand()"><i class="fas fa-save"></i> Save & Add All to Store Stock</button>
+            </div>
+        </div>
+
+        <!-- FAST GRID DISPATCH TO BRANCH -->
+        <div id="dispatchView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-truck-loading"></i> Fast Dispatch Stock to Branches</div>
+                <div class="form-group" style="max-width: 200px;">
+                    <label>Select Target Branch</label>
+                    <select id="fastDispatchTarget" class="form-control">
+                        <option value="BRANCH 1">Branch 1</option>
+                        <option value="BRANCH 2">Branch 2</option>
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Avail in Store</th>
+                                <th>Dispatch Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fastDispatchTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-green" style="margin-top: 12px;" onclick="processFastDispatch()"><i class="fas fa-paper-plane"></i> Confirm All Dispatches</button>
+            </div>
+        </div>
+
+        <!-- BRANCH TO STORE DEMAND REQUEST -->
+        <div id="branchReqView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-paper-plane"></i> Send Stock Demand Request to Main Store</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Requested Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="branchReqTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-blue" style="margin-top: 12px;" onclick="sendBranchRequest()"><i class="fas fa-paper-plane"></i> Send Request to Store</button>
+            </div>
+        </div>
+
+        <!-- OWNER WEEKLY ANALYTICS & REPORTS -->
+        <div id="ownerReportView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-chart-pie"></i> Owner Weekly Stock Summary</div>
+                <div class="kpi-grid">
+                    <div class="kpi-card"><div class="kpi-title">Weekly Store Received</div><div class="kpi-value" style="color: var(--accent-green);" id="repWeeklyDemand">0</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Sent to Branch 1</div><div class="kpi-value" style="color: var(--accent-blue);" id="repSentB1">0</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Sent to Branch 2</div><div class="kpi-value" style="color: var(--accent-orange);" id="repSentB2">0</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Total Consumption</div><div class="kpi-value" style="color: var(--accent-red);" id="repTotalWaste">0</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISPATCH LEDGER -->
+        <div id="ledgerView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-scroll"></i> Dispatch Ledger</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Date/Time</th><th>Item Name</th><th>Qty</th><th>Branch</th><th>Action</th></tr>
                         </thead>
                         <tbody id="ledgerTableBody"></tbody>
                     </table>
@@ -573,189 +259,75 @@
             </div>
         </div>
 
-        <!-- VIEW 4: CONSUMPTION & WASTAGE -->
+        <!-- USAGE & WASTAGE -->
         <div id="wasteView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title">
-                    <i class="fas fa-trash-alt"></i> Deduct Usage / Wastage
-                </div>
-                
+                <div class="panel-title"><i class="fas fa-trash-alt"></i> Deduct Kitchen Usage / Wastage</div>
                 <div class="form-group">
                     <label>Select Item</label>
                     <select id="wasteItem" class="form-control"></select>
                 </div>
                 <div class="form-group">
-                    <label>Deduct Location / Branch</label>
-                    <select id="wasteLocation" class="form-control">
-                        <option value="BRANCH_1">Branch 1</option>
-                        <option value="BRANCH_2">Branch 2</option>
-                        <option value="MAIN_STORE">Warehouse (Main Store)</option>
-                    </select>
+                    <label>Deduct Quantity</label>
+                    <input type="number" id="wasteQty" class="form-control" value="1" min="1">
                 </div>
-                <div class="form-group">
-                    <label>Quantity Used / Damaged</label>
-                    <input type="number" id="wasteQty" class="form-control" min="1" value="1">
-                </div>
-                <div class="form-group">
-                    <label>Reason</label>
-                    <select id="wasteReason" class="form-control">
-                        <option value="Kitchen Usage">Kitchen Usage / Order Cooking</option>
-                        <option value="Spoiled/Expired">Spoiled / Expired Item</option>
-                        <option value="Damaged Packaging">Damaged Packaging / Spillage</option>
-                    </select>
-                </div>
-
                 <button class="btn btn-orange" onclick="processDeduction()"><i class="fas fa-minus-circle"></i> Confirm Deduction</button>
             </div>
         </div>
 
-        <!-- VIEW 5: SETTINGS & OWNER SECURITY CONTROL -->
+        <!-- SETTINGS -->
         <div id="settingsView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title">
-                    <i class="fas fa-cog"></i> System & WhatsApp Settings
-                </div>
-
-                <div class="form-group">
-                    <label>Default WhatsApp Phone Number (With Country Code e.g., 923001234567)</label>
-                    <input type="text" id="whatsappNumberInput" class="form-control" placeholder="Leave empty for direct app sharing picker">
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-blue" onclick="saveSettings()"><i class="fas fa-save"></i> Save WhatsApp Settings</button>
-                </div>
-            </div>
-
-            <!-- OWNER ONLY PIN CONTROL PANEL -->
-            <div class="panel-card" id="ownerPinControlCard">
-                <div class="panel-title" style="color: var(--accent-red);">
-                    <i class="fas fa-user-shield"></i> Owner Security: Manage Account PINs
-                </div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Only accessible in Owner Mode to change PIN codes for all branch accounts.</p>
-
-                <div class="form-group">
-                    <label>👑 Owner PIN</label>
-                    <input type="password" id="pinOwnerInput" class="form-control" maxlength="6">
-                </div>
-                <div class="form-group">
-                    <label>🏬 Store Manager PIN</label>
-                    <input type="password" id="pinStoreInput" class="form-control" maxlength="6">
-                </div>
-                <div class="form-group">
-                    <label>🍕 Branch 1 Manager PIN</label>
-                    <input type="password" id="pinB1Input" class="form-control" maxlength="6">
-                </div>
-                <div class="form-group">
-                    <label>🍔 Branch 2 Manager PIN</label>
-                    <input type="password" id="pinB2Input" class="form-control" maxlength="6">
-                </div>
-
-                <button class="btn btn-green" onclick="saveAllPINs()"><i class="fas fa-key"></i> Update All PIN Codes</button>
+                <div class="panel-title" style="color: var(--accent-red);"><i class="fas fa-user-shield"></i> Security Settings</div>
+                <div class="form-group"><label>Owner PIN</label><input type="password" id="pinOwnerInput" class="form-control"></div>
+                <div class="form-group"><label>Store Manager PIN</label><input type="password" id="pinStoreInput" class="form-control"></div>
+                <div class="form-group"><label>Branch 1 PIN</label><input type="password" id="pinB1Input" class="form-control"></div>
+                <div class="form-group"><label>Branch 2 PIN</label><input type="password" id="pinB2Input" class="form-control"></div>
+                <button class="btn btn-green" onclick="savePINs()"><i class="fas fa-key"></i> Save PINs</button>
             </div>
         </div>
 
     </div>
 
-    <!-- LOGIN / ROLE SWITCH PIN MODAL -->
+    <!-- LOGIN MODAL -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h4 style="color: var(--accent-blue);"><i class="fas fa-shield-alt"></i> Select Account Login</h4>
-                <button class="menu-btn" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+            <div class="panel-title"><i class="fas fa-shield-alt"></i> Account Security Switch</div>
+            <div class="form-group">
+                <label>Select Account Role</label>
+                <select id="modalRoleSelect" class="form-control">
+                    <option value="OWNER">👑 Owner Account</option>
+                    <option value="STORE_MANAGER">🏬 Store / Warehouse Manager</option>
+                    <option value="BRANCH_1">🍕 Branch 1 Manager</option>
+                    <option value="BRANCH_2">🍔 Branch 2 Manager</option>
+                </select>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Select Account Role</label>
-                    <select id="modalRoleSelect" class="form-control">
-                        <option value="OWNER">👑 Owner Account</option>
-                        <option value="STORE_MANAGER">🏬 Store / Warehouse Manager</option>
-                        <option value="BRANCH_1">🍕 Branch 1 Manager</option>
-                        <option value="BRANCH_2">🍔 Branch 2 Manager</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Enter Account PIN Code</label>
-                    <input type="password" id="modalPinInput" class="form-control" placeholder="Enter PIN (e.g. 0000, 1111)" maxlength="6">
-                    <small style="color: var(--text-muted); font-size: 10px; display: block; margin-top: 4px;">
-                        Default PINs: Owner:0000, Store:1111, B1:2222, B2:3333
-                    </small>
-                </div>
+            <div class="form-group">
+                <label>Enter Account PIN</label>
+                <input type="password" id="modalPinInput" class="form-control" maxlength="6">
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
-                <button class="btn btn-green" onclick="verifyAndSwitchRole()"><i class="fas fa-sign-in-alt"></i> Login Role</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- WHATSAPP SHARE MODAL -->
-    <div class="modal" id="whatsappModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 style="color: var(--accent-green);"><i class="fab fa-whatsapp"></i> WhatsApp Sharing Options</h4>
-                <button class="menu-btn" onclick="closeWhatsAppModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Select how you want to send this report:</p>
-                
-                <div class="form-group">
-                    <label>Send Option</label>
-                    <select id="modalSendMode" class="form-control" onchange="toggleModalPhoneInput()">
-                        <option value="DEFAULT">Use Direct Share (Pick Contact on WhatsApp)</option>
-                        <option value="SAVED">Use Saved Number (<span id="modalSavedNumLabel">None</span>)</option>
-                        <option value="CUSTOM">Type Temporary Number</option>
-                    </select>
-                </div>
-
-                <div class="form-group" id="modalCustomPhoneGroup" style="display: none;">
-                    <label>Enter Phone Number (e.g. 923001234567)</label>
-                    <input type="text" id="modalCustomPhone" class="form-control" placeholder="923xxxxxxxxx">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeWhatsAppModal()">Cancel</button>
-                <button class="btn btn-green" onclick="executeWhatsAppSend()"><i class="fab fa-whatsapp"></i> Send Now</button>
-            </div>
+            <button class="btn btn-green" style="width: 100%; justify-content: center;" onclick="verifyAndSwitchRole()">Login</button>
         </div>
     </div>
 
     <script>
-        // Accounts PIN Setup (Owner can modify)
-        let accountPins = JSON.parse(localStorage.getItem('ibn_pins')) || {
-            'OWNER': '0000',
-            'STORE_MANAGER': '1111',
-            'BRANCH_1': '2222',
-            'BRANCH_2': '3333'
-        };
-
+        let accountPins = JSON.parse(localStorage.getItem('ibn_pins')) || { 'OWNER': '0000', 'STORE_MANAGER': '1111', 'BRANCH_1': '2222', 'BRANCH_2': '3333' };
         let currentRole = localStorage.getItem('ibn_role') || 'OWNER';
 
         let stockData = JSON.parse(localStorage.getItem('ibn_stock')) || [
-            { id: 1, name: 'Black olive', cat: 'INGREDIENT', warehouse: 10, dispatched: 5, b1: 5, b2: 0, minAlert: 2 },
-            { id: 2, name: 'Chicken powder', cat: 'INGREDIENT', warehouse: 10, dispatched: 0, b1: 0, b2: 0, minAlert: 5 },
-            { id: 3, name: 'Chili garlic', cat: 'SAUCE', warehouse: 15, dispatched: 0, b1: 0, b2: 0, minAlert: 3 },
-            { id: 4, name: 'Chowmin masla', cat: 'INGREDIENT', warehouse: 8, dispatched: 0, b1: 0, b2: 0, minAlert: 2 },
-            { id: 5, name: 'Forks 🍴', cat: 'PACKAGING', warehouse: 50, dispatched: 2, b1: 2, b2: 0, minAlert: 10 },
-            { id: 6, name: 'ketchup sashy', cat: 'SAUCE', warehouse: 100, dispatched: 0, b1: 0, b2: 0, minAlert: 20 },
-            { id: 7, name: 'Khaki', cat: 'PACKAGING', warehouse: 20, dispatched: 4, b1: 4, b2: 0, minAlert: 5 },
-            { id: 8, name: 'M.pack 750ml', cat: 'PACKAGING', warehouse: 30, dispatched: 0, b1: 0, b2: 0, minAlert: 10 },
-            { id: 9, name: 'Oil tem', cat: 'INGREDIENT', warehouse: 12, dispatched: 0, b1: 0, b2: 0, minAlert: 2 },
-            { id: 10, name: 'Pfc packing', cat: 'PACKAGING', warehouse: 40, dispatched: 6, b1: 6, b2: 0, minAlert: 10 }
+            { id: 1, name: 'Black olive', warehouse: 10, dispatched: 0, b1: 5, b2: 2 },
+            { id: 2, name: 'Chicken powder', warehouse: 15, dispatched: 0, b1: 3, b2: 1 },
+            { id: 3, name: 'Chili garlic', warehouse: 20, dispatched: 0, b1: 8, b2: 4 },
+            { id: 4, name: 'Forks 🍴', warehouse: 100, dispatched: 0, b1: 20, b2: 15 }
         ];
 
-        let ledgerData = JSON.parse(localStorage.getItem('ibn_ledger')) || [
-            { date: '18/08/2026, 11:50:32 pm', item: 'Black olive', qty: 5, branch: 'BRANCH 1', type: 'DISPATCH' },
-            { date: '18/08/2026, 8:12:53 pm', item: 'Forks 🍴', qty: 2, branch: 'BRANCH 1', type: 'DISPATCH' },
-            { date: '18/08/2026, 8:01:59 pm', item: 'Khaki', qty: 4, branch: 'BRANCH 1', type: 'DISPATCH' }
-        ];
-
-        let currentFilter = 'ALL';
-        let pendingWhatsAppType = 'summary';
+        let ledgerData = JSON.parse(localStorage.getItem('ibn_ledger')) || [];
+        let branchRequests = JSON.parse(localStorage.getItem('ibn_requests')) || [];
 
         function saveData() {
             localStorage.setItem('ibn_stock', JSON.stringify(stockData));
             localStorage.setItem('ibn_ledger', JSON.stringify(ledgerData));
+            localStorage.setItem('ibn_requests', JSON.stringify(branchRequests));
             localStorage.setItem('ibn_pins', JSON.stringify(accountPins));
             updateKPIs();
         }
@@ -766,59 +338,38 @@
             document.getElementById('loginModal').classList.add('active');
         }
 
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.remove('active');
-        }
-
         function verifyAndSwitchRole() {
             const selectedRole = document.getElementById('modalRoleSelect').value;
             const enteredPin = document.getElementById('modalPinInput').value.trim();
-
-            const requiredPin = accountPins[selectedRole] || '0000';
-
-            if (enteredPin === requiredPin) {
-                applyRole(selectedRole);
-                closeLoginModal();
-                alert(`Logged in as ${selectedRole.replace('_', ' ')}!`);
+            if (enteredPin === (accountPins[selectedRole] || '0000')) {
+                currentRole = selectedRole;
+                localStorage.setItem('ibn_role', selectedRole);
+                document.getElementById('loginModal').classList.remove('active');
+                applyRolePermissions();
             } else {
-                alert("❌ Incorrect PIN Code! Please enter correct account PIN.");
+                alert("❌ Incorrect PIN Code!");
             }
         }
 
-        function applyRole(role) {
-            currentRole = role;
-            localStorage.setItem('ibn_role', role);
+        function applyRolePermissions() {
+            document.getElementById('currentRoleBadgeLabel').innerText = currentRole.replace('_', ' ');
+            document.getElementById('roleDisplayTitle').innerText = currentRole.replace('_', ' ');
 
-            let labelMap = {
-                'OWNER': 'OWNER MODE',
-                'STORE_MANAGER': 'STORE MANAGER',
-                'BRANCH_1': 'BRANCH 1 MANAGER',
-                'BRANCH_2': 'BRANCH 2 MANAGER'
-            };
-            document.getElementById('currentRoleBadgeLabel').innerText = labelMap[role] || 'OWNER MODE';
+            // Strict Visibility Control
+            const isOwner = currentRole === 'OWNER';
+            const isStore = currentRole === 'STORE_MANAGER' || isOwner;
+            const isB1 = currentRole === 'BRANCH_1';
+            const isB2 = currentRole === 'BRANCH_2';
 
-            let titleMap = {
-                'OWNER': 'Owner View (Full Access)',
-                'STORE_MANAGER': 'Warehouse Manager View',
-                'BRANCH_1': 'Branch 1 View',
-                'BRANCH_2': 'Branch 2 View'
-            };
-            document.getElementById('roleDisplayTitle').innerText = titleMap[role] || 'Owner View';
+            document.getElementById('menu-store-demand').style.display = isStore ? 'block' : 'none';
+            document.getElementById('menu-dispatch').style.display = isStore ? 'block' : 'none';
+            document.getElementById('menu-branch-req').style.display = (isB1 || isB2) ? 'block' : 'none';
+            document.getElementById('menu-owner-report').style.display = isOwner ? 'block' : 'none';
 
-            // Filter columns based on role
-            if (role === 'BRANCH_1') {
-                document.getElementById('colB2').style.display = 'none';
-                document.getElementById('colWarehouse').style.display = 'table-cell';
-                document.getElementById('colB1').style.display = 'table-cell';
-            } else if (role === 'BRANCH_2') {
-                document.getElementById('colB1').style.display = 'none';
-                document.getElementById('colWarehouse').style.display = 'table-cell';
-                document.getElementById('colB2').style.display = 'table-cell';
-            } else {
-                document.getElementById('colB1').style.display = 'table-cell';
-                document.getElementById('colB2').style.display = 'table-cell';
-                document.getElementById('colWarehouse').style.display = 'table-cell';
-            }
+            // Column visibility in live stock
+            document.getElementById('thB1').style.display = (isB2) ? 'none' : 'table-cell';
+            document.getElementById('thB2').style.display = (isB1) ? 'none' : 'table-cell';
+            document.getElementById('thWh').style.display = (isB1 || isB2) ? 'none' : 'table-cell';
 
             renderStockTable();
         }
@@ -830,342 +381,229 @@
 
         function switchView(viewId) {
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
-            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
-            
             document.getElementById(viewId).classList.add('active-view');
-            const navBtn = document.getElementById('nav-' + viewId.replace('View', ''));
-            if(navBtn) navBtn.classList.add('active');
-            
-            if (document.getElementById('sidebar').classList.contains('active')) {
-                toggleSidebar();
-            }
+            toggleSidebar();
 
             if (viewId === 'dashboardView') renderStockTable();
-            if (viewId === 'dispatchView') populateDispatchDropdown();
-            if (viewId === 'ledgerView') renderLedgerTable();
-            if (viewId === 'wasteView') populateWasteDropdown();
-            if (viewId === 'settingsView') loadSettingsView();
+            if (viewId === 'storeDemandView') renderStoreDemandGrid();
+            if (viewId === 'dispatchView') renderFastDispatchGrid();
+            if (viewId === 'branchReqView') renderBranchReqGrid();
+            if (viewId === 'ownerReportView') renderOwnerReport();
+            if (viewId === 'ledgerView') renderLedger();
+            if (viewId === 'wasteView') populateWasteItems();
         }
 
         function updateKPIs() {
             document.getElementById('kpiTotal').innerText = stockData.length;
-            let lowCount = stockData.filter(i => (i.b1 + i.b2 + i.warehouse) <= i.minAlert).length;
-            document.getElementById('kpiLow').innerText = lowCount;
-            let totalDispatched = stockData.reduce((acc, curr) => acc + curr.dispatched, 0);
-            document.getElementById('kpiDispatched').innerText = totalDispatched;
-        }
-
-        function setFilter(filter, btn) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderStockTable();
+            document.getElementById('kpiDispatched').innerText = stockData.reduce((a, b) => a + (b.dispatched || 0), 0);
+            document.getElementById('kpiPendingReq').innerText = branchRequests.length;
         }
 
         function renderStockTable() {
             const tbody = document.getElementById('stockTableBody');
-            const search = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
-
             stockData.forEach(item => {
-                const totalStock = item.b1 + item.b2 + item.warehouse;
-                const isLow = totalStock <= item.minAlert;
-
-                if (currentFilter === 'LOW' && !isLow) return;
-                if (currentFilter === 'INGREDIENT' && item.cat !== 'INGREDIENT') return;
-                if (currentFilter === 'PACKAGING' && item.cat !== 'PACKAGING') return;
-                if (search && !item.name.toLowerCase().includes(search)) return;
-
                 const tr = document.createElement('tr');
-                let b1Col = currentRole === 'BRANCH_2' ? '' : `<td>${item.b1}</td>`;
-                let b2Col = currentRole === 'BRANCH_1' ? '' : `<td>${item.b2}</td>`;
+                let whCol = (currentRole === 'BRANCH_1' || currentRole === 'BRANCH_2') ? '' : `<td>${item.warehouse}</td>`;
+                let b1Col = (currentRole === 'BRANCH_2') ? '' : `<td>${item.b1}</td>`;
+                let b2Col = (currentRole === 'BRANCH_1') ? '' : `<td>${item.b2}</td>`;
 
                 tr.innerHTML = `
-                    <td><strong>${item.name}</strong> <span class="cat-badge">${item.cat}</span></td>
-                    <td>${item.warehouse}</td>
+                    <td><strong>${item.name}</strong></td>
+                    ${whCol}
                     <td style="color: var(--accent-orange); font-weight: bold;">${item.dispatched}</td>
                     ${b1Col}
                     ${b2Col}
-                    <td>
-                        <span class="status-badge ${isLow ? 'status-reorder' : 'status-ok'}">
-                            ${isLow ? 'REORDER' : 'OK'}
-                        </span>
-                    </td>
                 `;
                 tbody.appendChild(tr);
             });
             updateKPIs();
         }
 
-        function populateDispatchDropdown() {
-            const select = document.getElementById('dispatchItem');
-            select.innerHTML = '';
-            stockData.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.innerText = `${item.name} (Warehouse: ${item.warehouse})`;
-                select.appendChild(opt);
+        function renderStoreDemandGrid() {
+            const tbody = document.getElementById('storeDemandTableBody');
+            tbody.innerHTML = '';
+            stockData.forEach(i => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${i.name}</strong></td>
+                        <td>${i.warehouse}</td>
+                        <td><input type="number" class="qty-input store-demand-input" data-id="${i.id}" value="0" min="0"></td>
+                    </tr>
+                `;
             });
-            updateDispatchMax();
         }
 
-        function updateDispatchMax() {
-            const itemId = parseInt(document.getElementById('dispatchItem').value);
-            const item = stockData.find(i => i.id === itemId);
-            if (item) {
-                document.getElementById('dispatchAvailableLabel').innerText = `Available in Warehouse: ${item.warehouse}`;
-            }
-        }
-
-        function processDispatch() {
-            const itemId = parseInt(document.getElementById('dispatchItem').value);
-            const branch = document.getElementById('dispatchBranch').value;
-            const qty = parseInt(document.getElementById('dispatchQty').value) || 0;
-
-            const item = stockData.find(i => i.id === itemId);
-            if (!item) return;
-
-            if (qty <= 0) {
-                alert('Please enter valid quantity!');
-                return;
-            }
-
-            if (qty > item.warehouse) {
-                alert(`Insufficient stock in warehouse! Only ${item.warehouse} available.`);
-                return;
-            }
-
-            item.warehouse -= qty;
-            item.dispatched += qty;
-            if (branch === 'BRANCH 1') item.b1 += qty;
-            if (branch === 'BRANCH 2') item.b2 += qty;
-
-            const now = new Date().toLocaleString();
-            ledgerData.unshift({
-                date: now,
-                item: item.name,
-                qty: qty,
-                branch: branch,
-                type: 'DISPATCH'
+        function saveStoreDemand() {
+            const inputs = document.querySelectorAll('.store-demand-input');
+            let addedCount = 0;
+            inputs.forEach(input => {
+                const id = parseInt(input.getAttribute('data-id'));
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    const item = stockData.find(x => x.id === id);
+                    if (item) {
+                        item.warehouse += qty;
+                        addedCount++;
+                        ledgerData.unshift({
+                            date: new Date().toLocaleString(),
+                            item: item.name,
+                            qty: qty,
+                            branch: 'Store Main Warehouse',
+                            type: 'STORE DEMAND PURCHASE'
+                        });
+                    }
+                }
             });
-
             saveData();
-            alert(`Dispatched ${qty} ${item.name} to ${branch} successfully!`);
+            alert(`Added new purchase stock for ${addedCount} items successfully!`);
             switchView('dashboardView');
         }
 
-        function renderLedgerTable() {
-            const tbody = document.getElementById('ledgerTableBody');
-            const search = document.getElementById('ledgerSearch').value.toLowerCase();
-            const branch = document.getElementById('branchFilter').value;
+        function renderFastDispatchGrid() {
+            const tbody = document.getElementById('fastDispatchTableBody');
             tbody.innerHTML = '';
-
-            ledgerData.forEach(entry => {
-                if (branch !== 'ALL' && entry.branch !== branch) return;
-                if (search && (!entry.item.toLowerCase().includes(search) && !entry.branch.toLowerCase().includes(search))) return;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="color: var(--text-muted); font-size: 11px;">${entry.date}</td>
-                    <td><strong>${entry.item}</strong></td>
-                    <td style="color: var(--accent-blue); font-weight: bold;">${entry.qty}</td>
-                    <td>${entry.branch}</td>
-                    <td><span class="status-badge status-ok">${entry.type}</span></td>
+            stockData.forEach(i => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${i.name}</strong></td>
+                        <td>${i.warehouse}</td>
+                        <td><input type="number" class="qty-input fast-dispatch-input" data-id="${i.id}" value="0" min="0" max="${i.warehouse}"></td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
         }
 
-        function populateWasteDropdown() {
+        function processFastDispatch() {
+            const targetBranch = document.getElementById('fastDispatchTarget').value;
+            const inputs = document.querySelectorAll('.fast-dispatch-input');
+            let dispatchedCount = 0;
+
+            inputs.forEach(input => {
+                const id = parseInt(input.getAttribute('data-id'));
+                const qty = parseInt(input.value) || 0;
+                const item = stockData.find(x => x.id === id);
+
+                if (qty > 0 && item && qty <= item.warehouse) {
+                    item.warehouse -= qty;
+                    item.dispatched += qty;
+                    if (targetBranch === 'BRANCH 1') item.b1 += qty;
+                    if (targetBranch === 'BRANCH 2') item.b2 += qty;
+
+                    dispatchedCount++;
+                    ledgerData.unshift({
+                        date: new Date().toLocaleString(),
+                        item: item.name,
+                        qty: qty,
+                        branch: targetBranch,
+                        type: 'DISPATCH'
+                    });
+                }
+            });
+
+            saveData();
+            alert(`Successfully dispatched stock to ${targetBranch}!`);
+            switchView('dashboardView');
+        }
+
+        function renderBranchReqGrid() {
+            const tbody = document.getElementById('branchReqTableBody');
+            tbody.innerHTML = '';
+            stockData.forEach(i => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${i.name}</strong></td>
+                        <td><input type="number" class="qty-input branch-req-input" data-id="${i.id}" value="0" min="0"></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function sendBranchRequest() {
+            const inputs = document.querySelectorAll('.branch-req-input');
+            const sender = currentRole === 'BRANCH_1' ? 'BRANCH 1' : 'BRANCH 2';
+            let reqItems = [];
+
+            inputs.forEach(input => {
+                const id = parseInt(input.getAttribute('data-id'));
+                const qty = parseInt(input.value) || 0;
+                const item = stockData.find(x => x.id === id);
+
+                if (qty > 0 && item) {
+                    reqItems.push({ item: item.name, qty: qty });
+                }
+            });
+
+            if (reqItems.length > 0) {
+                branchRequests.push({ date: new Date().toLocaleString(), sender: sender, items: reqItems });
+                saveData();
+                alert(`Demand request sent to Main Store successfully!`);
+                switchView('dashboardView');
+            }
+        }
+
+        function renderOwnerReport() {
+            let totalPurchased = ledgerData.filter(l => l.type === 'STORE DEMAND PURCHASE').reduce((a, b) => a + b.qty, 0);
+            let totalB1 = ledgerData.filter(l => l.branch === 'BRANCH 1' && l.type === 'DISPATCH').reduce((a, b) => a + b.qty, 0);
+            let totalB2 = ledgerData.filter(l => l.branch === 'BRANCH 2' && l.type === 'DISPATCH').reduce((a, b) => a + b.qty, 0);
+            let totalWaste = ledgerData.filter(l => l.type.includes('WASTE')).reduce((a, b) => a + b.qty, 0);
+
+            document.getElementById('repWeeklyDemand').innerText = totalPurchased;
+            document.getElementById('repSentB1').innerText = totalB1;
+            document.getElementById('repSentB2').innerText = totalB2;
+            document.getElementById('repTotalWaste').innerText = totalWaste;
+        }
+
+        function renderLedger() {
+            const tbody = document.getElementById('ledgerTableBody');
+            tbody.innerHTML = '';
+            ledgerData.forEach(l => {
+                tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.item}</td><td>${l.qty}</td><td>${l.branch}</td><td>${l.type}</td></tr>`;
+            });
+        }
+
+        function populateWasteItems() {
             const select = document.getElementById('wasteItem');
             select.innerHTML = '';
-            stockData.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.innerText = `${item.name} (W:${item.warehouse} | B1:${item.b1} | B2:${item.b2})`;
-                select.appendChild(opt);
+            stockData.forEach(i => {
+                select.innerHTML += `<option value="${i.id}">${i.name}</option>`;
             });
         }
 
         function processDeduction() {
-            const itemId = parseInt(document.getElementById('wasteItem').value);
-            const loc = document.getElementById('wasteLocation').value;
+            const id = parseInt(document.getElementById('wasteItem').value);
             const qty = parseInt(document.getElementById('wasteQty').value) || 0;
-            const reason = document.getElementById('wasteReason').value;
+            const item = stockData.find(x => x.id === id);
 
-            if (qty <= 0) {
-                alert('Please enter a valid quantity');
-                return;
-            }
+            if (item && qty > 0) {
+                if (currentRole === 'BRANCH_1') item.b1 = Math.max(0, item.b1 - qty);
+                else if (currentRole === 'BRANCH_2') item.b2 = Math.max(0, item.b2 - qty);
+                else item.warehouse = Math.max(0, item.warehouse - qty);
 
-            const item = stockData.find(i => i.id === itemId);
-            if (!item) return;
+                ledgerData.unshift({
+                    date: new Date().toLocaleString(),
+                    item: item.name,
+                    qty: qty,
+                    branch: currentRole.replace('_', ' '),
+                    type: 'WASTE / DEDUCTION'
+                });
 
-            if (loc === 'BRANCH_1') item.b1 = Math.max(0, item.b1 - qty);
-            else if (loc === 'BRANCH_2') item.b2 = Math.max(0, item.b2 - qty);
-            else if (loc === 'MAIN_STORE') item.warehouse = Math.max(0, item.warehouse - qty);
-
-            const now = new Date().toLocaleString();
-            ledgerData.unshift({
-                date: now,
-                item: item.name,
-                qty: qty,
-                branch: loc.replace('_', ' '),
-                type: `WASTE (${reason})`
-            });
-
-            saveData();
-            alert(`Deducted ${qty} ${item.name} successfully!`);
-            switchView('dashboardView');
-        }
-
-        function confirmClearHistory() {
-            if (currentRole !== 'OWNER') {
-                alert("🔒 Permission Denied! Only OWNER can clear ledger history.");
-                return;
-            }
-
-            if (confirm("Are you sure you want to clear the entire dispatch/wastage ledger history?")) {
-                ledgerData = [];
                 saveData();
-                renderLedgerTable();
+                alert(`Deduction recorded!`);
+                switchView('dashboardView');
             }
         }
 
-        function loadSettingsView() {
-            const savedNum = localStorage.getItem('ibn_wa_number') || '';
-            document.getElementById('whatsappNumberInput').value = savedNum;
-
-            // Display PIN inputs for Owner mode only
-            const ownerCard = document.getElementById('ownerPinControlCard');
-            if (currentRole === 'OWNER') {
-                ownerCard.style.display = 'block';
-                document.getElementById('pinOwnerInput').value = accountPins['OWNER'] || '';
-                document.getElementById('pinStoreInput').value = accountPins['STORE_MANAGER'] || '';
-                document.getElementById('pinB1Input').value = accountPins['BRANCH_1'] || '';
-                document.getElementById('pinB2Input').value = accountPins['BRANCH_2'] || '';
-            } else {
-                ownerCard.style.display = 'none';
-            }
-        }
-
-        function saveSettings() {
-            const num = document.getElementById('whatsappNumberInput').value.trim();
-            localStorage.setItem('ibn_wa_number', num);
-            alert("Settings Saved Successfully!");
-        }
-
-        function saveAllPINs() {
-            if (currentRole !== 'OWNER') {
-                alert("Only OWNER can change PIN codes!");
-                return;
-            }
-
-            const pOwner = document.getElementById('pinOwnerInput').value.trim();
-            const pStore = document.getElementById('pinStoreInput').value.trim();
-            const pB1 = document.getElementById('pinB1Input').value.trim();
-            const pB2 = document.getElementById('pinB2Input').value.trim();
-
-            if (!pOwner || !pStore || !pB1 || !pB2) {
-                alert("PINs cannot be empty!");
-                return;
-            }
-
-            accountPins['OWNER'] = pOwner;
-            accountPins['STORE_MANAGER'] = pStore;
-            accountPins['BRANCH_1'] = pB1;
-            accountPins['BRANCH_2'] = pB2;
-
+        function savePINs() {
+            accountPins['OWNER'] = document.getElementById('pinOwnerInput').value.trim();
+            accountPins['STORE_MANAGER'] = document.getElementById('pinStoreInput').value.trim();
+            accountPins['BRANCH_1'] = document.getElementById('pinB1Input').value.trim();
+            accountPins['BRANCH_2'] = document.getElementById('pinB2Input').value.trim();
             saveData();
-            alert("🔑 All Account PIN Codes updated successfully!");
+            alert("PINs Updated!");
         }
 
-        function openWhatsAppModal(type) {
-            pendingWhatsAppType = type;
-            const savedNum = localStorage.getItem('ibn_wa_number');
-            document.getElementById('modalSavedNumLabel').innerText = savedNum || 'None Saved';
-            document.getElementById('whatsappModal').classList.add('active');
-        }
-
-        function closeWhatsAppModal() {
-            document.getElementById('whatsappModal').classList.remove('active');
-        }
-
-        function toggleModalPhoneInput() {
-            const mode = document.getElementById('modalSendMode').value;
-            document.getElementById('modalCustomPhoneGroup').style.display = (mode === 'CUSTOM') ? 'block' : 'none';
-        }
-
-        function executeWhatsAppSend() {
-            const mode = document.getElementById('modalSendMode').value;
-            let phone = '';
-
-            if (mode === 'SAVED') {
-                phone = localStorage.getItem('ibn_wa_number') || '';
-                if (!phone) {
-                    alert("No saved number found!");
-                    return;
-                }
-            } else if (mode === 'CUSTOM') {
-                phone = document.getElementById('modalCustomPhone').value.trim();
-                if (!phone) {
-                    alert("Please enter a phone number.");
-                    return;
-                }
-            }
-
-            let message = '';
-            const today = new Date().toLocaleDateString();
-
-            if (pendingWhatsAppType === 'summary') {
-                message = `📊 *IBN E RAHAT ENTERPRISE - DAILY STOCK SUMMARY*\n📅 Date: ${today}\n👤 Role: ${currentRole}\n\n`;
-                let lowItems = [];
-                stockData.forEach(item => {
-                    const total = item.b1 + item.b2 + item.warehouse;
-                    if (total <= item.minAlert) lowItems.push(`${item.name} (Stock: ${total})`);
-                });
-
-                message += `📦 *Total Unique Items:* ${stockData.length}\n`;
-                message += `⚠️ *Low Stock Items (${lowItems.length}):*\n` + (lowItems.length > 0 ? lowItems.map(i => `• ${i}`).join('\n') : 'All items OK') + `\n\n`;
-                message += `🚚 *Today Dispatched Summary:*\n`;
-                stockData.filter(i => i.dispatched > 0).forEach(i => {
-                    message += `• ${i.name}: ${i.dispatched}\n`;
-                });
-            } else {
-                message = `📜 *IBN E RAHAT ENTERPRISE - DISPATCH LEDGER*\n📅 Date: ${today}\n\n`;
-                ledgerData.slice(0, 10).forEach(l => {
-                    message += `• ${l.date} - ${l.item} (${l.qty}) -> ${l.branch} [${l.type}]\n`;
-                });
-            }
-
-            const encodedMsg = encodeURIComponent(message);
-            closeWhatsAppModal();
-
-            if (phone) {
-                window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`, '_blank');
-            } else {
-                window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, '_blank');
-            }
-        }
-
-        function exportToExcel() {
-            let csv = 'Item Name,Category,Warehouse,Dispatched Today,Branch 1,Branch 2,Status\n';
-            stockData.forEach(i => {
-                const total = i.b1 + i.b2 + i.warehouse;
-                const status = total <= i.minAlert ? 'REORDER NOW' : 'OK';
-                csv += `"${i.name}","${i.cat}",${i.warehouse},${i.dispatched},${i.b1},${i.b2},"${status}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `Stock_Report_${new Date().toISOString().slice(0,10)}.csv`);
-            a.click();
-        }
-
-        // Init App Role
-        applyRole(currentRole);
+        applyRolePermissions();
     </script>
 </body>
 </html>
