@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ibn E Rahat Enterprise - Smart Inventory & Demand System</title>
+    <title>Ibn E Rahat Enterprise - Inventory Management System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -67,13 +67,19 @@
         .app-view { display: none; }
         .app-view.active-view { display: block; }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .kpi-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; text-align: center; }
         .kpi-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
         .kpi-value { font-size: 18px; font-weight: bold; }
 
         .panel-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
         .panel-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--accent-blue); }
+
+        .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+        .filter-btn { background-color: #2a2a2a; border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background-color: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+        .cat-badge { font-size: 9px; background: #2a2a2a; color: #aaa; padding: 2px 6px; border-radius: 3px; margin-left: 5px; font-weight: normal; }
 
         .table-responsive { overflow-x: auto; border-radius: 6px; border: 1px solid var(--card-border); }
         table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
@@ -86,7 +92,6 @@
 
         .qty-input { width: 80px; padding: 5px; background: #121212; border: 1px solid var(--accent-blue); color: #fff; border-radius: 4px; font-weight: bold; text-align: center; }
 
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn { padding: 8px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
         .btn-green { background-color: #27ae60; color: #fff; }
         .btn-blue { background-color: #2980b9; color: #fff; }
@@ -119,16 +124,17 @@
 
         <div class="role-box-sidebar">
             <button class="btn btn-blue" style="width: 100%; justify-content: center;" onclick="openLoginModal()">
-                <i class="fas fa-key"></i> Switch Role
+                <i class="fas fa-key"></i> Switch Account Role
             </button>
         </div>
 
         <ul class="sidebar-menu">
             <li><a href="#" onclick="switchView('dashboardView')" class="active" id="nav-dashboard"><i class="fas fa-chart-line"></i> Live Stock Dashboard</a></li>
+            <li id="menu-add-item"><a href="#" onclick="switchView('addItemView')" id="nav-addItem"><i class="fas fa-box-open"></i> Add New Inventory Item</a></li>
             <li id="menu-store-demand"><a href="#" onclick="switchView('storeDemandView')" id="nav-storeDemand"><i class="fas fa-plus-circle"></i> Add Store Purchase Demand</a></li>
             <li id="menu-dispatch"><a href="#" onclick="switchView('dispatchView')" id="nav-dispatch"><i class="fas fa-truck-loading"></i> Fast Grid Dispatch</a></li>
             <li id="menu-branch-req"><a href="#" onclick="switchView('branchReqView')" id="nav-branchReq"><i class="fas fa-paper-plane"></i> Send Branch Demand Req</a></li>
-            <li id="menu-owner-report"><a href="#" onclick="switchView('ownerReportView')" id="nav-ownerReport"><i class="fas fa-analytics"></i> Owner Weekly Analytics</a></li>
+            <li id="menu-owner-report"><a href="#" onclick="switchView('ownerReportView')" id="nav-ownerReport"><i class="fas fa-chart-pie"></i> Owner Weekly Analytics</a></li>
             <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch Ledger</a></li>
             <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Usage & Wastage</a></li>
             <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> Security Settings</a></li>
@@ -147,6 +153,14 @@
 
             <div class="panel-card">
                 <div class="panel-title"><i class="fas fa-boxes"></i> Live Stock Tracker (<span id="roleDisplayTitle">Owner Mode</span>)</div>
+
+                <div class="filter-container">
+                    <button class="filter-btn active" onclick="setFilter('ALL', this)">All Items</button>
+                    <button class="filter-btn" onclick="setFilter('INGREDIENT', this)">Ingredients</button>
+                    <button class="filter-btn" onclick="setFilter('PACKAGING', this)">Packaging</button>
+                    <button class="filter-btn" onclick="setFilter('SAUCE', this)">Sauces</button>
+                </div>
+
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -164,11 +178,38 @@
             </div>
         </div>
 
+        <!-- ADD NEW ITEM VIEW (OWNER & STORE ONLY) -->
+        <div id="addItemView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-box-open"></i> Create / Add New Inventory Item</div>
+                
+                <div class="form-group">
+                    <label>Item Name (e.g. Cheese, Tomato Sauce)</label>
+                    <input type="text" id="newItemName" class="form-control" placeholder="Enter item name">
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="newItemCat" class="form-control">
+                        <option value="INGREDIENT">Ingredients</option>
+                        <option value="PACKAGING">Packaging</option>
+                        <option value="SAUCE">Sauces</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Initial Warehouse Stock Quantity</label>
+                    <input type="number" id="newItemQty" class="form-control" value="0" min="0">
+                </div>
+
+                <button class="btn btn-green" onclick="addNewItem()"><i class="fas fa-plus-circle"></i> Save & Add Item to System</button>
+            </div>
+        </div>
+
         <!-- STORE PURCHASE DEMAND ENTRY (GRID NO DROPDOWN) -->
         <div id="storeDemandView" class="app-view">
             <div class="panel-card">
                 <div class="panel-title"><i class="fas fa-cart-plus"></i> Add Store Purchase Stock (Grid Entry)</div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Type new purchased quantity next to items and click Save. It auto-adds into existing Warehouse stock.</p>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -313,12 +354,13 @@
     <script>
         let accountPins = JSON.parse(localStorage.getItem('ibn_pins')) || { 'OWNER': '0000', 'STORE_MANAGER': '1111', 'BRANCH_1': '2222', 'BRANCH_2': '3333' };
         let currentRole = localStorage.getItem('ibn_role') || 'OWNER';
+        let currentFilter = 'ALL';
 
         let stockData = JSON.parse(localStorage.getItem('ibn_stock')) || [
-            { id: 1, name: 'Black olive', warehouse: 10, dispatched: 0, b1: 5, b2: 2 },
-            { id: 2, name: 'Chicken powder', warehouse: 15, dispatched: 0, b1: 3, b2: 1 },
-            { id: 3, name: 'Chili garlic', warehouse: 20, dispatched: 0, b1: 8, b2: 4 },
-            { id: 4, name: 'Forks 🍴', warehouse: 100, dispatched: 0, b1: 20, b2: 15 }
+            { id: 1, name: 'Black olive', cat: 'INGREDIENT', warehouse: 10, dispatched: 0, b1: 5, b2: 2 },
+            { id: 2, name: 'Chicken powder', cat: 'INGREDIENT', warehouse: 15, dispatched: 0, b1: 3, b2: 1 },
+            { id: 3, name: 'Chili garlic', cat: 'SAUCE', warehouse: 20, dispatched: 0, b1: 8, b2: 4 },
+            { id: 4, name: 'Forks 🍴', cat: 'PACKAGING', warehouse: 100, dispatched: 0, b1: 20, b2: 15 }
         ];
 
         let ledgerData = JSON.parse(localStorage.getItem('ibn_ledger')) || [];
@@ -355,18 +397,17 @@
             document.getElementById('currentRoleBadgeLabel').innerText = currentRole.replace('_', ' ');
             document.getElementById('roleDisplayTitle').innerText = currentRole.replace('_', ' ');
 
-            // Strict Visibility Control
             const isOwner = currentRole === 'OWNER';
             const isStore = currentRole === 'STORE_MANAGER' || isOwner;
             const isB1 = currentRole === 'BRANCH_1';
             const isB2 = currentRole === 'BRANCH_2';
 
+            document.getElementById('menu-add-item').style.display = isStore ? 'block' : 'none';
             document.getElementById('menu-store-demand').style.display = isStore ? 'block' : 'none';
             document.getElementById('menu-dispatch').style.display = isStore ? 'block' : 'none';
             document.getElementById('menu-branch-req').style.display = (isB1 || isB2) ? 'block' : 'none';
             document.getElementById('menu-owner-report').style.display = isOwner ? 'block' : 'none';
 
-            // Column visibility in live stock
             document.getElementById('thB1').style.display = (isB2) ? 'none' : 'table-cell';
             document.getElementById('thB2').style.display = (isB1) ? 'none' : 'table-cell';
             document.getElementById('thWh').style.display = (isB1 || isB2) ? 'none' : 'table-cell';
@@ -377,6 +418,13 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderStockTable();
         }
 
         function switchView(viewId) {
@@ -403,13 +451,15 @@
             const tbody = document.getElementById('stockTableBody');
             tbody.innerHTML = '';
             stockData.forEach(item => {
+                if (currentFilter !== 'ALL' && item.cat !== currentFilter) return;
+
                 const tr = document.createElement('tr');
                 let whCol = (currentRole === 'BRANCH_1' || currentRole === 'BRANCH_2') ? '' : `<td>${item.warehouse}</td>`;
                 let b1Col = (currentRole === 'BRANCH_2') ? '' : `<td>${item.b1}</td>`;
                 let b2Col = (currentRole === 'BRANCH_1') ? '' : `<td>${item.b2}</td>`;
 
                 tr.innerHTML = `
-                    <td><strong>${item.name}</strong></td>
+                    <td><strong>${item.name}</strong> <span class="cat-badge">${item.cat || 'ITEM'}</span></td>
                     ${whCol}
                     <td style="color: var(--accent-orange); font-weight: bold;">${item.dispatched}</td>
                     ${b1Col}
@@ -420,13 +470,41 @@
             updateKPIs();
         }
 
+        function addNewItem() {
+            const name = document.getElementById('newItemName').value.trim();
+            const cat = document.getElementById('newItemCat').value;
+            const qty = parseInt(document.getElementById('newItemQty').value) || 0;
+
+            if (!name) {
+                alert("Please enter item name!");
+                return;
+            }
+
+            const newId = stockData.length > 0 ? Math.max(...stockData.map(i => i.id)) + 1 : 1;
+            stockData.push({
+                id: newId,
+                name: name,
+                cat: cat,
+                warehouse: qty,
+                dispatched: 0,
+                b1: 0,
+                b2: 0
+            });
+
+            saveData();
+            alert(`🎉 Naya item "${name}" add ho gaya hai!`);
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newItemQty').value = '0';
+            switchView('dashboardView');
+        }
+
         function renderStoreDemandGrid() {
             const tbody = document.getElementById('storeDemandTableBody');
             tbody.innerHTML = '';
             stockData.forEach(i => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${i.name}</strong></td>
+                        <td><strong>${i.name}</strong> <span class="cat-badge">${i.cat || 'ITEM'}</span></td>
                         <td>${i.warehouse}</td>
                         <td><input type="number" class="qty-input store-demand-input" data-id="${i.id}" value="0" min="0"></td>
                     </tr>
@@ -466,7 +544,7 @@
             stockData.forEach(i => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${i.name}</strong></td>
+                        <td><strong>${i.name}</strong> <span class="cat-badge">${i.cat || 'ITEM'}</span></td>
                         <td>${i.warehouse}</td>
                         <td><input type="number" class="qty-input fast-dispatch-input" data-id="${i.id}" value="0" min="0" max="${i.warehouse}"></td>
                     </tr>
@@ -512,7 +590,7 @@
             stockData.forEach(i => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${i.name}</strong></td>
+                        <td><strong>${i.name}</strong> <span class="cat-badge">${i.cat || 'ITEM'}</span></td>
                         <td><input type="number" class="qty-input branch-req-input" data-id="${i.id}" value="0" min="0"></td>
                     </tr>
                 `;
