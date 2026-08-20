@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ibn E Rahat Enterprise - Inventory Management System</title>
+    <title>Ibn E Rahat Enterprise - Inventory System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -80,8 +80,6 @@
         .filter-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
         .filter-btn { background-color: #2a2a2a; border: 1px solid var(--card-border); color: var(--text-muted); padding: 7px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background-color: var(--accent-teal); color: #fff; border-color: var(--accent-teal); font-weight: bold; }
-        .filter-btn.low-alert { border-color: var(--accent-red); color: #ff6b6b; }
-        .filter-btn.low-alert.active { background-color: var(--accent-red); color: #fff; }
 
         .search-box { position: relative; margin-bottom: 14px; }
         .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
@@ -92,16 +90,13 @@
         th { background-color: var(--table-header); color: var(--accent-teal); padding: 12px 10px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
         td { padding: 12px 10px; border-bottom: 1px solid var(--card-border); background-color: var(--card-bg); vertical-align: middle; }
         
-        .item-name-cell { display: flex; flex-direction: column; }
         .cat-badge { font-size: 9px; background: #2a2a2a; color: #aaaaaa; padding: 2px 6px; border-radius: 3px; width: fit-content; margin-top: 3px; font-weight: bold; }
-
         .qty-input { width: 80px; padding: 6px; background: #121212; border: 1px solid var(--accent-teal); color: #fff; border-radius: 4px; font-weight: bold; text-align: center; }
 
         .btn { padding: 8px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
         .btn-green { background-color: #27ae60; color: #fff; }
         .btn-blue { background-color: #2980b9; color: #fff; }
         .btn-red { background-color: #c0392b; color: #fff; }
-        .btn-orange { background-color: #d35400; color: #fff; }
 
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
@@ -110,6 +105,8 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; padding: 15px; }
         .modal.active { display: flex; }
         .modal-content { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; max-width: 400px; width: 100%; padding: 20px; }
+        
+        .req-card { background: #181818; border: 1px solid var(--card-border); padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -127,70 +124,43 @@
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span style="font-weight: bold; color: var(--accent-teal);">Navigation Menu</span>
+            <span style="font-weight: bold; color: var(--accent-teal);">Menu</span>
             <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
         </div>
 
         <div class="role-box-sidebar">
             <button class="btn btn-blue" style="width: 100%; justify-content: center;" onclick="openLoginModal()">
-                <i class="fas fa-key"></i> Switch Account Role
+                <i class="fas fa-key"></i> Switch Role
             </button>
         </div>
 
         <ul class="sidebar-menu">
             <li><a href="#" onclick="switchView('dashboardView')" class="active" id="nav-dashboard"><i class="fas fa-chart-line"></i> Live Stock Tracker</a></li>
-            <li id="menu-add-item"><a href="#" onclick="switchView('addItemView')" id="nav-addItem"><i class="fas fa-box-open"></i> Add New Inventory Item</a></li>
-            <li id="menu-store-demand"><a href="#" onclick="switchView('storeDemandView')" id="nav-storeDemand"><i class="fas fa-cart-plus"></i> Add Store Purchase Stock</a></li>
-            <li id="menu-dispatch"><a href="#" onclick="switchView('dispatchView')" id="nav-dispatch"><i class="fas fa-truck-loading"></i> Fast Grid Dispatch</a></li>
-            <li id="menu-branch-req"><a href="#" onclick="switchView('branchReqView')" id="nav-branchReq"><i class="fas fa-paper-plane"></i> Send Branch Stock Demand</a></li>
-            <li id="menu-owner-report"><a href="#" onclick="switchView('ownerReportView')" id="nav-ownerReport"><i class="fas fa-chart-pie"></i> Owner Weekly Analytics</a></li>
-            <li><a href="#" onclick="switchView('ledgerView')" id="nav-ledger"><i class="fas fa-scroll"></i> Dispatch Ledger</a></li>
-            <li><a href="#" onclick="switchView('wasteView')" id="nav-waste"><i class="fas fa-trash-alt"></i> Usage & Wastage</a></li>
-            <li><a href="#" onclick="switchView('settingsView')" id="nav-settings"><i class="fas fa-cog"></i> Security PIN Settings</a></li>
+            <li id="menu-view-requests"><a href="#" onclick="switchView('viewRequestsView')"><i class="fas fa-inbox"></i> Live Branch Requests</a></li>
+            <li id="menu-branch-req"><a href="#" onclick="switchView('branchReqView')"><i class="fas fa-paper-plane"></i> Send Branch Demand</a></li>
+            <li id="menu-store-demand"><a href="#" onclick="switchView('storeDemandView')"><i class="fas fa-cart-plus"></i> Add Store Purchase</a></li>
+            <li id="menu-dispatch"><a href="#" onclick="switchView('dispatchView')"><i class="fas fa-truck-loading"></i> Fast Grid Dispatch</a></li>
         </ul>
     </div>
 
     <div class="container">
 
-        <!-- LIVE STOCK DASHBOARD -->
+        <!-- DASHBOARD VIEW -->
         <div id="dashboardView" class="app-view active-view">
-            <div class="kpi-grid">
-                <div class="kpi-card"><div class="kpi-title">TOTAL ITEMS</div><div class="kpi-value" style="color: var(--accent-teal)" id="kpiTotal">0</div></div>
-                <div class="kpi-card"><div class="kpi-title">LOW STOCK ALERT</div><div class="kpi-value" style="color: var(--accent-red)" id="kpiLowStock">0</div></div>
-                <div class="kpi-card"><div class="kpi-title">DISPATCHED TODAY</div><div class="kpi-value" style="color: var(--accent-orange)" id="kpiDispatched">0</div></div>
-            </div>
-
             <div class="panel-card">
                 <div class="panel-title"><i class="fas fa-boxes"></i> Live Stock Tracker</div>
-
-                <div class="action-btn-group">
-                    <button class="btn btn-wa" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> Share Summary WhatsApp</button>
-                    <button class="btn btn-excel" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                </div>
-
-                <div class="filter-container">
-                    <button class="filter-btn active" onclick="setFilter('ALL', this)">All Items</button>
-                    <button class="filter-btn low-alert" onclick="setFilter('LOW', this)"><i class="fas fa-exclamation-triangle"></i> Low Stock Only</button>
-                    <button class="filter-btn" onclick="setFilter('INGREDIENT', this)">Ingredients</button>
-                    <button class="filter-btn" onclick="setFilter('PACKAGING', this)">Packaging</button>
-                    <button class="filter-btn" onclick="setFilter('SAUCE', this)">Sauces</button>
-                </div>
-
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search item name..." onkeyup="renderStockTable()">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search item..." onkeyup="renderStockTable()">
                 </div>
-
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
                                 <th>Item Name</th>
-                                <th id="thWh">Warehouse</th>
-                                <th>Dispatched Today</th>
-                                <th id="thB1">Branch 1</th>
-                                <th id="thB2">Branch 2</th>
-                                <th id="thAction" style="display:none;">Owner Action</th>
+                                <th>Store Stock</th>
+                                <th>Branch 1</th>
+                                <th>Branch 2</th>
                             </tr>
                         </thead>
                         <tbody id="stockTableBody"></tbody>
@@ -199,78 +169,10 @@
             </div>
         </div>
 
-        <!-- ADD NEW ITEM VIEW -->
-        <div id="addItemView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-box-open"></i> Add New Inventory Item</div>
-                <div class="form-group">
-                    <label>Item Name (e.g. Cheese, Chowmin, Pizza Box)</label>
-                    <input type="text" id="newItemName" class="form-control" placeholder="Enter item name">
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="newItemCat" class="form-control">
-                        <option value="INGREDIENT">Ingredients</option>
-                        <option value="PACKAGING">Packaging</option>
-                        <option value="SAUCE">Sauces</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Low Stock Alert Level (Qty)</label>
-                    <input type="number" id="newItemAlertLevel" class="form-control" value="5" min="1">
-                </div>
-                <div class="form-group">
-                    <label>Initial Warehouse Stock Quantity</label>
-                    <input type="number" id="newItemQty" class="form-control" value="0" min="0">
-                </div>
-                <button class="btn btn-green" onclick="addNewItem()"><i class="fas fa-plus-circle"></i> Save Item to System</button>
-            </div>
-        </div>
-
-        <!-- STORE PURCHASE DEMAND ENTRY -->
-        <div id="storeDemandView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-cart-plus"></i> Add Store Purchase Stock (Grid Entry)</div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Type new purchased quantity next to items and click Save.</p>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr><th>Item Name</th><th>Current Store Stock</th><th>New Purchased Qty</th></tr>
-                        </thead>
-                        <tbody id="storeDemandTableBody"></tbody>
-                    </table>
-                </div>
-                <button class="btn btn-green" style="margin-top: 12px;" onclick="saveStoreDemand()"><i class="fas fa-save"></i> Save & Add All to Store Stock</button>
-            </div>
-        </div>
-
-        <!-- FAST GRID DISPATCH -->
-        <div id="dispatchView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-truck-loading"></i> Fast Dispatch Stock to Branches</div>
-                <div class="form-group" style="max-width: 220px;">
-                    <label>Select Target Branch</label>
-                    <select id="fastDispatchTarget" class="form-control">
-                        <option value="BRANCH 1">Branch 1</option>
-                        <option value="BRANCH 2">Branch 2</option>
-                    </select>
-                </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr><th>Item Name</th><th>Avail in Store</th><th>Dispatch Qty</th></tr>
-                        </thead>
-                        <tbody id="fastDispatchTableBody"></tbody>
-                    </table>
-                </div>
-                <button class="btn btn-green" style="margin-top: 12px;" onclick="processFastDispatch()"><i class="fas fa-paper-plane"></i> Confirm All Dispatches</button>
-            </div>
-        </div>
-
-        <!-- BRANCH STOCK DEMAND REQUEST -->
+        <!-- SEND BRANCH DEMAND (WITH DUAL OPTION) -->
         <div id="branchReqView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-paper-plane"></i> Send Stock Demand Request to Store</div>
+                <div class="panel-title"><i class="fas fa-paper-plane"></i> Send Stock Demand Request</div>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -279,86 +181,71 @@
                         <tbody id="branchReqTableBody"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-blue" style="margin-top: 12px;" onclick="sendBranchRequest()"><i class="fas fa-paper-plane"></i> Send Request</button>
-            </div>
-        </div>
 
-        <!-- OWNER WEEKLY ANALYTICS -->
-        <div id="ownerReportView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-chart-pie"></i> Owner Weekly Stock Summary</div>
-                <div class="kpi-grid">
-                    <div class="kpi-card"><div class="kpi-title">Weekly Purchased</div><div class="kpi-value" style="color: var(--accent-green);" id="repWeeklyDemand">0</div></div>
-                    <div class="kpi-card"><div class="kpi-title">Sent Branch 1</div><div class="kpi-value" style="color: var(--accent-teal);" id="repSentB1">0</div></div>
-                    <div class="kpi-card"><div class="kpi-title">Sent Branch 2</div><div class="kpi-value" style="color: var(--accent-orange);" id="repSentB2">0</div></div>
+                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-green" style="flex: 1;" onclick="sendOnlineRequest()">
+                        <i class="fas fa-cloud-upload-alt"></i> Option 1: Send Online (Cloud System)
+                    </button>
+                    <button class="btn btn-wa" style="flex: 1;" onclick="sendWhatsAppRequest()">
+                        <i class="fab fa-whatsapp"></i> Option 2: Send Direct via WhatsApp
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- DISPATCH LEDGER -->
-        <div id="ledgerView" class="app-view">
+        <!-- STORE MANAGER INBOX (VIEW ONLINE REQUESTS) -->
+        <div id="viewRequestsView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-scroll"></i> Dispatch Ledger</div>
+                <div class="panel-title"><i class="fas fa-inbox"></i> Incoming Branch Demands</div>
+                <div id="requestsContainer">
+                    <p style="font-size: 12px; color: var(--text-muted);">No new pending demands.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STORE PURCHASE & DISPATCH VIEWS -->
+        <div id="storeDemandView" class="app-view">
+            <div class="panel-card">
+                <div class="panel-title"><i class="fas fa-cart-plus"></i> Add Store Purchase Stock</div>
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr><th>Date/Time</th><th>Item Name</th><th>Qty</th><th>Branch</th><th>Action</th></tr>
-                        </thead>
-                        <tbody id="ledgerTableBody"></tbody>
+                        <thead><tr><th>Item Name</th><th>Current Store Stock</th><th>New Quantity</th></tr></thead>
+                        <tbody id="storeDemandTableBody"></tbody>
                     </table>
                 </div>
+                <button class="btn btn-green" style="margin-top: 12px;" onclick="saveStoreDemand()">Save To Warehouse</button>
             </div>
         </div>
 
-        <!-- USAGE & WASTAGE -->
-        <div id="wasteView" class="app-view">
+        <div id="dispatchView" class="app-view">
             <div class="panel-card">
-                <div class="panel-title"><i class="fas fa-trash-alt"></i> Deduct Kitchen Usage / Wastage</div>
-                <div class="form-group"><label>Select Item</label><select id="wasteItem" class="form-control"></select></div>
-                <div class="form-group"><label>Deduct Quantity</label><input type="number" id="wasteQty" class="form-control" value="1" min="1"></div>
-                <button class="btn btn-orange" onclick="processDeduction()"><i class="fas fa-minus-circle"></i> Confirm Deduction</button>
-            </div>
-        </div>
-
-        <!-- SETTINGS -->
-        <div id="settingsView" class="app-view">
-            <div class="panel-card">
-                <div class="panel-title" style="color: var(--accent-red);"><i class="fas fa-user-shield"></i> Security Settings</div>
-                <div class="form-group"><label>Owner PIN</label><input type="password" id="pinOwnerInput" class="form-control"></div>
-                <div class="form-group"><label>Store Manager PIN</label><input type="password" id="pinStoreInput" class="form-control"></div>
-                <div class="form-group"><label>Branch 1 PIN</label><input type="password" id="pinB1Input" class="form-control"></div>
-                <div class="form-group"><label>Branch 2 PIN</label><input type="password" id="pinB2Input" class="form-control"></div>
-                <button class="btn btn-green" onclick="savePINs()"><i class="fas fa-key"></i> Save PINs</button>
+                <div class="panel-title"><i class="fas fa-truck-loading"></i> Fast Dispatch Stock</div>
+                <div class="form-group" style="max-width: 220px;">
+                    <label>Target Branch</label>
+                    <select id="fastDispatchTarget" class="form-control">
+                        <option value="BRANCH 1">Branch 1</option>
+                        <option value="BRANCH 2">Branch 2</option>
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Item Name</th><th>Store Qty</th><th>Dispatch Qty</th></tr></thead>
+                        <tbody id="fastDispatchTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-green" style="margin-top: 12px;" onclick="processFastDispatch()">Confirm Dispatch</button>
             </div>
         </div>
 
     </div>
 
-    <!-- OWNER EDIT MODAL -->
-    <div class="modal" id="ownerEditModal">
-        <div class="modal-content">
-            <div class="panel-title"><i class="fas fa-edit"></i> Owner Direct Stock Edit</div>
-            <p id="editItemTitle" style="font-weight: bold; margin-bottom: 10px; color: var(--accent-teal);"></p>
-            <input type="hidden" id="editItemId">
-            <div class="form-group"><label>Warehouse Qty</label><input type="number" id="editWhQty" class="form-control"></div>
-            <div class="form-group"><label>Branch 1 Qty</label><input type="number" id="editB1Qty" class="form-control"></div>
-            <div class="form-group"><label>Branch 2 Qty</label><input type="number" id="editB2Qty" class="form-control"></div>
-            <div style="display: flex; gap: 8px; margin-top: 15px;">
-                <button class="btn btn-green" style="flex:1;" onclick="saveOwnerStockEdit()">Save Changes</button>
-                <button class="btn btn-red" onclick="deleteItemByOwner()"><i class="fas fa-trash"></i> Delete Item</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECURITY LOCK OVERLAY MODAL -->
-    <div class="modal active" id="mainPinLockScreen" style="z-index: 9999; background: rgba(0,0,0,0.95);">
+    <!-- LOCK MODAL -->
+    <div class="modal active" id="mainPinLockScreen">
         <div class="modal-content" style="text-align: center;">
             <div style="font-size: 36px; color: var(--accent-teal); margin-bottom: 8px;"><i class="fas fa-shield-alt"></i></div>
             <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">Ibn E Rahat Enterprise</h2>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px;">System Locked. Enter PIN Code to continue.</p>
-            
-            <div class="form-group" style="text-align: left;">
-                <label>Select Account Role</label>
+            <div class="form-group" style="text-align: left; margin-top: 15px;">
+                <label>Select Role</label>
                 <select id="lockRoleSelect" class="form-control">
                     <option value="OWNER">👑 Owner Account</option>
                     <option value="STORE_MANAGER">🏬 Store / Warehouse Manager</option>
@@ -366,83 +253,52 @@
                     <option value="BRANCH_2">🍔 Branch 2 Manager</option>
                 </select>
             </div>
-
             <div class="form-group" style="text-align: left;">
                 <label>Enter 4-Digit Security PIN</label>
                 <input type="password" id="lockPinInput" maxlength="4" class="form-control" placeholder="••••" style="font-size: 20px; letter-spacing: 5px; text-align: center;">
             </div>
-
-            <button class="btn btn-green" style="width: 100%; justify-content: center; padding: 10px;" onclick="unlockAppSystem()">
-                <i class="fas fa-lock-open"></i> Unlock Dashboard
-            </button>
+            <button class="btn btn-green" style="width: 100%; justify-content: center;" onclick="unlockAppSystem()">Unlock Dashboard</button>
             <p id="lockErrorMsg" style="color: var(--accent-red); font-size: 11px; margin-top: 10px; display: none;">❌ Incorrect Security PIN Code!</p>
         </div>
     </div>
 
     <script>
-        let accountPins = JSON.parse(localStorage.getItem('ibn_pins')) || { 'OWNER': '0000', 'STORE_MANAGER': '1111', 'BRANCH_1': '2222', 'BRANCH_2': '3333' };
+        let accountPins = { 'OWNER': '0000', 'STORE_MANAGER': '1111', 'BRANCH_1': '2222', 'BRANCH_2': '3333' };
         let currentRole = null;
-        let currentFilter = 'ALL';
 
         let stockData = JSON.parse(localStorage.getItem('ibn_stock')) || [
-            { id: 1, name: 'Black olive', cat: 'INGREDIENT', alertLevel: 5, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 2, name: 'Chicken powder', cat: 'INGREDIENT', alertLevel: 5, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 3, name: 'Chili garlic', cat: 'SAUCE', alertLevel: 5, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 4, name: 'Chowmin masla', cat: 'INGREDIENT', alertLevel: 5, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 5, name: 'Forks 🍴', cat: 'PACKAGING', alertLevel: 20, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 6, name: 'ketchup sashy', cat: 'PACKAGING', alertLevel: 50, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 7, name: 'Khaki', cat: 'PACKAGING', alertLevel: 10, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 8, name: 'M.pack 750ml', cat: 'PACKAGING', alertLevel: 15, warehouse: 0, dispatched: 0, b1: 0, b2: 0 },
-            { id: 9, name: 'Oil tem', cat: 'INGREDIENT', alertLevel: 5, warehouse: 0, dispatched: 0, b1: 0, b2: 0 }
+            { id: 1, name: 'Black olive', warehouse: 0, b1: 0, b2: 0 },
+            { id: 2, name: 'Chicken powder', warehouse: 0, b1: 0, b2: 0 },
+            { id: 3, name: 'Chili garlic', warehouse: 0, b1: 0, b2: 0 },
+            { id: 4, name: 'Pizza Dough', warehouse: 0, b1: 0, b2: 0 }
         ];
 
-        let ledgerData = JSON.parse(localStorage.getItem('ibn_ledger')) || [];
+        let pendingRequests = JSON.parse(localStorage.getItem('ibn_online_requests')) || [];
 
         function unlockAppSystem() {
             const role = document.getElementById('lockRoleSelect').value;
             const pin = document.getElementById('lockPinInput').value.trim();
-            const errorMsg = document.getElementById('lockErrorMsg');
-
             if (pin === (accountPins[role] || '0000')) {
                 currentRole = role;
                 document.getElementById('mainPinLockScreen').classList.remove('active');
                 document.getElementById('lockPinInput').value = '';
-                errorMsg.style.display = 'none';
                 applyRolePermissions();
             } else {
-                errorMsg.style.display = 'block';
+                document.getElementById('lockErrorMsg').style.display = 'block';
             }
         }
 
-        function openLoginModal() {
-            document.getElementById('mainPinLockScreen').classList.add('active');
-        }
-
-        function saveData() {
-            localStorage.setItem('ibn_stock', JSON.stringify(stockData));
-            localStorage.setItem('ibn_ledger', JSON.stringify(ledgerData));
-            localStorage.setItem('ibn_pins', JSON.stringify(accountPins));
-            updateKPIs();
-        }
+        function openLoginModal() { document.getElementById('mainPinLockScreen').classList.add('active'); }
 
         function applyRolePermissions() {
             document.getElementById('currentRoleBadgeLabel').innerText = currentRole.replace('_', ' ');
+            const isStore = currentRole === 'STORE_MANAGER' || currentRole === 'OWNER';
+            const isBranch = currentRole === 'BRANCH_1' || currentRole === 'BRANCH_2';
 
-            const isOwner = currentRole === 'OWNER';
-            const isStore = currentRole === 'STORE_MANAGER' || isOwner;
-            const isB1 = currentRole === 'BRANCH_1';
-            const isB2 = currentRole === 'BRANCH_2';
-
-            document.getElementById('menu-add-item').style.display = isStore ? 'block' : 'none';
+            document.getElementById('menu-branch-req').style.display = isBranch ? 'block' : 'none';
+            document.getElementById('menu-view-requests').style.display = isStore ? 'block' : 'none';
             document.getElementById('menu-store-demand').style.display = isStore ? 'block' : 'none';
             document.getElementById('menu-dispatch').style.display = isStore ? 'block' : 'none';
-            document.getElementById('menu-branch-req').style.display = (isB1 || isB2) ? 'block' : 'none';
-            document.getElementById('menu-owner-report').style.display = isOwner ? 'block' : 'none';
-
-            document.getElementById('thB1').style.display = (isB2) ? 'none' : 'table-cell';
-            document.getElementById('thB2').style.display = (isB1) ? 'none' : 'table-cell';
-            document.getElementById('thWh').style.display = (isB1 || isB2) ? 'none' : 'table-cell';
-            document.getElementById('thAction').style.display = isOwner ? 'table-cell' : 'none';
 
             renderStockTable();
         }
@@ -452,146 +308,109 @@
             document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
 
-        function setFilter(filter, btn) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderStockTable();
-        }
-
         function switchView(viewId) {
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
             document.getElementById(viewId).classList.add('active-view');
             toggleSidebar();
 
             if (viewId === 'dashboardView') renderStockTable();
+            if (viewId === 'branchReqView') renderBranchReqGrid();
+            if (viewId === 'viewRequestsView') renderRequestsInbox();
             if (viewId === 'storeDemandView') renderStoreDemandGrid();
             if (viewId === 'dispatchView') renderFastDispatchGrid();
-            if (viewId === 'branchReqView') renderBranchReqGrid();
-            if (viewId === 'ownerReportView') renderOwnerReport();
-            if (viewId === 'ledgerView') renderLedger();
-            if (viewId === 'wasteView') populateWasteItems();
-        }
-
-        function updateKPIs() {
-            document.getElementById('kpiTotal').innerText = stockData.length;
-            let lowCount = stockData.filter(i => i.warehouse <= (i.alertLevel || 5)).length;
-            document.getElementById('kpiLowStock').innerText = lowCount;
-            document.getElementById('kpiDispatched').innerText = stockData.reduce((a, b) => a + (b.dispatched || 0), 0);
         }
 
         function renderStockTable() {
             const tbody = document.getElementById('stockTableBody');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
-
             stockData.forEach(item => {
-                if (currentFilter === 'LOW' && item.warehouse > (item.alertLevel || 5)) return;
-                if (currentFilter !== 'ALL' && currentFilter !== 'LOW' && item.cat !== currentFilter) return;
-                if (searchVal && !item.name.toLowerCase().includes(searchVal)) return;
-
-                const tr = document.createElement('tr');
-                let whCol = (currentRole === 'BRANCH_1' || currentRole === 'BRANCH_2') ? '' : `<td>${item.warehouse}</td>`;
-                let b1Col = (currentRole === 'BRANCH_2') ? '' : `<td>${item.b1}</td>`;
-                let b2Col = (currentRole === 'BRANCH_1') ? '' : `<td>${item.b2}</td>`;
-                let actionCol = (currentRole === 'OWNER') ? `<td><button class="btn btn-blue" style="padding:3px 6px; font-size:10px;" onclick="openOwnerEditModal(${item.id})"><i class="fas fa-edit"></i></button></td>` : '';
-
-                tr.innerHTML = `
-                    <td>
-                        <div class="item-name-cell">
-                            <strong>${item.name}</strong>
-                            <span class="cat-badge">${item.cat || 'ITEM'}</span>
-                        </div>
-                    </td>
-                    ${whCol}
-                    <td style="color: var(--accent-orange); font-weight: bold;">${item.dispatched}</td>
-                    ${b1Col}
-                    ${b2Col}
-                    ${actionCol}
-                `;
-                tbody.appendChild(tr);
+                tbody.innerHTML += `<tr><td><strong>${item.name}</strong></td><td>${item.warehouse}</td><td>${item.b1}</td><td>${item.b2}</td></tr>`;
             });
-            updateKPIs();
         }
 
-        function openOwnerEditModal(id) {
-            const item = stockData.find(x => x.id === id);
-            if (!item) return;
-
-            document.getElementById('editItemId').value = item.id;
-            document.getElementById('editItemTitle').innerText = item.name;
-            document.getElementById('editWhQty').value = item.warehouse;
-            document.getElementById('editB1Qty').value = item.b1;
-            document.getElementById('editB2Qty').value = item.b2;
-            document.getElementById('ownerEditModal').classList.add('active');
+        function renderBranchReqGrid() {
+            const tbody = document.getElementById('branchReqTableBody');
+            tbody.innerHTML = '';
+            stockData.forEach(i => {
+                tbody.innerHTML += `<tr><td><strong>${i.name}</strong></td><td><input type="number" class="qty-input branch-req-input" data-name="${i.name}" value="0" min="0"></td></tr>`;
+            });
         }
 
-        function saveOwnerStockEdit() {
-            const id = parseInt(document.getElementById('editItemId').value);
-            const item = stockData.find(x => x.id === id);
-            if (item) {
-                item.warehouse = parseInt(document.getElementById('editWhQty').value) || 0;
-                item.b1 = parseInt(document.getElementById('editB1Qty').value) || 0;
-                item.b2 = parseInt(document.getElementById('editB2Qty').value) || 0;
-                saveData();
-                document.getElementById('ownerEditModal').classList.remove('active');
-                renderStockTable();
-            }
-        }
+        // OPTION 1: ONLINE / CLOUD SYSTEM DEMAND
+        function sendOnlineRequest() {
+            let items = [];
+            document.querySelectorAll('.branch-req-input').forEach(input => {
+                let qty = parseInt(input.value) || 0;
+                if (qty > 0) items.push({ item: input.getAttribute('data-name'), qty: qty });
+            });
 
-        function deleteItemByOwner() {
-            const id = parseInt(document.getElementById('editItemId').value);
-            if (confirm("Item delete karna chahte hain?")) {
-                stockData = stockData.filter(x => x.id !== id);
-                saveData();
-                document.getElementById('ownerEditModal').classList.remove('active');
-                renderStockTable();
-            }
-        }
+            if (items.length === 0) return alert("Kuch quantity add karein!");
 
-        function addNewItem() {
-            const name = document.getElementById('newItemName').value.trim();
-            const cat = document.getElementById('newItemCat').value;
-            const alertLevel = parseInt(document.getElementById('newItemAlertLevel').value) || 5;
-            const qty = parseInt(document.getElementById('newItemQty').value) || 0;
+            pendingRequests.unshift({
+                id: Date.now(),
+                branch: currentRole.replace('_', ' '),
+                date: new Date().toLocaleTimeString(),
+                items: items
+            });
 
-            if (!name) return alert("Item name likhein!");
-
-            const newId = stockData.length > 0 ? Math.max(...stockData.map(i => i.id)) + 1 : 1;
-            stockData.push({ id: newId, name: name, cat: cat, alertLevel: alertLevel, warehouse: qty, dispatched: 0, b1: 0, b2: 0 });
-
-            saveData();
-            alert(`Naya item "${name}" add ho gaya!`);
-            document.getElementById('newItemName').value = '';
+            localStorage.setItem('ibn_online_requests', JSON.stringify(pendingRequests));
+            alert("✅ Request Sent Online To Warehouse!");
             switchView('dashboardView');
+        }
+
+        // OPTION 2: DIRECT WHATSAPP DEMAND
+        function sendWhatsAppRequest() {
+            let text = `📦 *STOCK DEMAND REQUEST*\nFrom: *${currentRole.replace('_', ' ')}*\n\n`;
+            let hasItems = false;
+
+            document.querySelectorAll('.branch-req-input').forEach(input => {
+                let qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    text += `• *${input.getAttribute('data-name')}*: ${qty}\n`;
+                    hasItems = true;
+                }
+            });
+
+            if (!hasItems) return alert("Kuch quantity add karein!");
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function renderRequestsInbox() {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = '';
+
+            if (pendingRequests.length === 0) {
+                container.innerHTML = '<p style="font-size: 12px; color: var(--text-muted);">No new online requests.</p>';
+                return;
+            }
+
+            pendingRequests.forEach(req => {
+                let itemList = req.items.map(i => `${i.item}: ${i.qty}`).join(', ');
+                container.innerHTML += `
+                    <div class="req-card">
+                        <strong style="color:var(--accent-teal);">${req.branch}</strong> (${req.date})<br>
+                        <span>${itemList}</span>
+                    </div>`;
+            });
         }
 
         function renderStoreDemandGrid() {
             const tbody = document.getElementById('storeDemandTableBody');
             tbody.innerHTML = '';
             stockData.forEach(i => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${i.name}</strong><br><span class="cat-badge">${i.cat}</span></td>
-                        <td>${i.warehouse}</td>
-                        <td><input type="number" class="qty-input store-demand-input" data-id="${i.id}" value="0" min="0"></td>
-                    </tr>`;
+                tbody.innerHTML += `<tr><td><strong>${i.name}</strong></td><td>${i.warehouse}</td><td><input type="number" class="qty-input store-demand-input" data-id="${i.id}" value="0" min="0"></td></tr>`;
             });
         }
 
         function saveStoreDemand() {
             document.querySelectorAll('.store-demand-input').forEach(input => {
-                const id = parseInt(input.getAttribute('data-id'));
-                const qty = parseInt(input.value) || 0;
-                if (qty > 0) {
-                    const item = stockData.find(x => x.id === id);
-                    if (item) {
-                        item.warehouse += qty;
-                        ledgerData.unshift({ date: new Date().toLocaleString(), item: item.name, qty: qty, branch: 'Store Warehouse', type: 'PURCHASE' });
-                    }
-                }
+                let id = parseInt(input.getAttribute('data-id'));
+                let qty = parseInt(input.value) || 0;
+                let item = stockData.find(x => x.id === id);
+                if (item) item.warehouse += qty;
             });
-            saveData();
+            localStorage.setItem('ibn_stock', JSON.stringify(stockData));
             switchView('dashboardView');
         }
 
@@ -599,109 +418,25 @@
             const tbody = document.getElementById('fastDispatchTableBody');
             tbody.innerHTML = '';
             stockData.forEach(i => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${i.name}</strong></td>
-                        <td>${i.warehouse}</td>
-                        <td><input type="number" class="qty-input fast-dispatch-input" data-id="${i.id}" value="0" min="0"></td>
-                    </tr>`;
+                tbody.innerHTML += `<tr><td><strong>${i.name}</strong></td><td>${i.warehouse}</td><td><input type="number" class="qty-input fast-dispatch-input" data-id="${i.id}" value="0" min="0"></td></tr>`;
             });
         }
 
         function processFastDispatch() {
             const target = document.getElementById('fastDispatchTarget').value;
             document.querySelectorAll('.fast-dispatch-input').forEach(input => {
-                const id = parseInt(input.getAttribute('data-id'));
-                const qty = parseInt(input.value) || 0;
-                const item = stockData.find(x => x.id === id);
+                let id = parseInt(input.getAttribute('data-id'));
+                let qty = parseInt(input.value) || 0;
+                let item = stockData.find(x => x.id === id);
                 if (qty > 0 && item && qty <= item.warehouse) {
                     item.warehouse -= qty;
-                    item.dispatched += qty;
                     if (target === 'BRANCH 1') item.b1 += qty;
                     if (target === 'BRANCH 2') item.b2 += qty;
-                    ledgerData.unshift({ date: new Date().toLocaleString(), item: item.name, qty: qty, branch: target, type: 'DISPATCH' });
                 }
             });
-            saveData();
+            localStorage.setItem('ibn_stock', JSON.stringify(stockData));
             switchView('dashboardView');
-        }
-
-        function renderBranchReqGrid() {
-            const tbody = document.getElementById('branchReqTableBody');
-            tbody.innerHTML = '';
-            stockData.forEach(i => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${i.name}</strong></td>
-                        <td><input type="number" class="qty-input branch-req-input" data-id="${i.id}" value="0" min="0"></td>
-                    </tr>`;
-            });
-        }
-
-        function sendBranchRequest() {
-            alert("Branch request sent to main store!");
-            switchView('dashboardView');
-        }
-
-        function renderOwnerReport() {
-            document.getElementById('repWeeklyDemand').innerText = ledgerData.filter(l => l.type === 'PURCHASE').reduce((a, b) => a + b.qty, 0);
-            document.getElementById('repSentB1').innerText = ledgerData.filter(l => l.branch === 'BRANCH 1').reduce((a, b) => a + b.qty, 0);
-            document.getElementById('repSentB2').innerText = ledgerData.filter(l => l.branch === 'BRANCH 2').reduce((a, b) => a + b.qty, 0);
-        }
-
-        function renderLedger() {
-            const tbody = document.getElementById('ledgerTableBody');
-            tbody.innerHTML = '';
-            ledgerData.forEach(l => {
-                tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.item}</td><td>${l.qty}</td><td>${l.branch}</td><td>${l.type}</td></tr>`;
-            });
-        }
-
-        function populateWasteItems() {
-            const select = document.getElementById('wasteItem');
-            select.innerHTML = '';
-            stockData.forEach(i => select.innerHTML += `<option value="${i.id}">${i.name}</option>`);
-        }
-
-        function processDeduction() {
-            const id = parseInt(document.getElementById('wasteItem').value);
-            const qty = parseInt(document.getElementById('wasteQty').value) || 0;
-            const item = stockData.find(x => x.id === id);
-            if (item && qty > 0) {
-                if (currentRole === 'BRANCH_1') item.b1 = Math.max(0, item.b1 - qty);
-                else if (currentRole === 'BRANCH_2') item.b2 = Math.max(0, item.b2 - qty);
-                else item.warehouse = Math.max(0, item.warehouse - qty);
-                saveData();
-                switchView('dashboardView');
-            }
-        }
-
-        function shareWhatsApp() {
-            let text = "📦 *Ibn E Rahat Enterprise - Stock Summary*\n\n";
-            stockData.forEach(i => text += `• *${i.name}*: Warehouse: ${i.warehouse} | B1: ${i.b1} | B2: ${i.b2}\n`);
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function exportExcel() {
-            let csv = "Item Name,Category,Warehouse,Dispatched Today,Branch 1,Branch 2\n";
-            stockData.forEach(i => csv += `"${i.name}","${i.cat}",${i.warehouse},${i.dispatched},${i.b1},${i.b2}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Stock_Report.csv`;
-            a.click();
-        }
-
-        function savePINs() {
-            accountPins['OWNER'] = document.getElementById('pinOwnerInput').value.trim() || accountPins['OWNER'];
-            accountPins['STORE_MANAGER'] = document.getElementById('pinStoreInput').value.trim() || accountPins['STORE_MANAGER'];
-            accountPins['BRANCH_1'] = document.getElementById('pinB1Input').value.trim() || accountPins['BRANCH_1'];
-            accountPins['BRANCH_2'] = document.getElementById('pinB2Input').value.trim() || accountPins['BRANCH_2'];
-            saveData();
-            alert("Security PINs Updated!");
         }
     </script>
 </body>
 </html>
-9
